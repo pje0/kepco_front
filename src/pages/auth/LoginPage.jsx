@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Zap, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,10 +19,13 @@ export default function LoginPage() {
   const location = useLocation()
 
   // 이미 로그인된 경우 홈으로
-  if (isAuthenticated) {
-    navigate('/home', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/home', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
+
+  if (isAuthenticated) return null
 
   const from = location.state?.from?.pathname || '/home'
 
@@ -110,16 +113,15 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* 테스트 계정 힌트 */}
-            <div className="mt-4 p-3 bg-muted rounded-md text-xs text-muted-foreground">
-              <p className="font-medium mb-1">테스트 계정 (비밀번호: 1234)</p>
-              <div className="grid grid-cols-2 gap-1">
-                <span>시민: citizen1</span>
-                <span>인사: hr1</span>
-                <span>파견: dispatch1</span>
-                <span>관리자: admin1</span>
-                <span>출동: worker1</span>
-              </div>
+            {/* 💡 [회원가입 안내 창구 유도 단락] 로그인 버튼 하단에 안전하게 배치 */}
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              아직 회원이 아니신가요?{' '}
+              <Link 
+                to="/register" 
+                className="font-medium text-primary hover:underline underline-offset-4"
+              >
+                일반 민원인 회원가입
+              </Link>
             </div>
           </CardContent>
         </Card>
