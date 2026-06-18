@@ -60,10 +60,18 @@ export default function EmployeePage() {
     e.preventDefault()
     setFormError('')
 
-    // 💡 필수 기재 항목 검증 (백엔드 @NotBlank 어노테이션 기준 동기화)
-    if (!form.loginId || !form.password || !form.name || !form.email || !form.role || !form.empNumber || !form.assignedDistrict) {
-      setFormError('필수 입력 항목(*)을 모두 채워주세요.')
+    // 1단계: 모든 직군 공통 필수 계정 정보 검증 (사번, 담당 구역 제외)
+    if (!form.loginId || !form.password || !form.name || !form.email || !form.role) {
+      setFormError('사원 계정 및 기본 신상 정보(*)를 모두 채워주세요.')
       return
+    }
+
+    // 2단계 [핵심 분기]: 현장 출동요원(WORKER)일 때만 하단 역량 정보를 필수로 강제
+    if (form.role === 'WORKER') {
+      if (!form.empNumber || !form.assignedDistrict) {
+        setFormError('출동요원은 현장 복구팀 필수 항목(사번, 담당 구역)을 모두 채워주세요.')
+        return
+      }
     }
 
     setIsSubmitting(true)
