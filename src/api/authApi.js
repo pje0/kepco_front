@@ -59,10 +59,10 @@ export async function changePassword(currentPassword, newPassword) {
 /**
  * 민원인 회원가입 API (최종 주소 규격 통합)
  */
-export async function register(loginId, password, name, email, phone) {
+export async function register(username, password, name, email, phone) {
   // 💡 기존의 '/register' 에서 '/auth/register' 로 경로를 수정하여 시큐리티 프리패스 라인에 완벽히 탑승시킵니다!
   return axiosInstance.post('/auth/register', {
-    loginId, 
+    username, 
     password,
     name,
     email,

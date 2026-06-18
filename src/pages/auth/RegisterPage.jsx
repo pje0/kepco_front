@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { register as apiRegister } from '@/api/authApi'
 
 export default function RegisterPage() {
-  const [loginId, setLoginId] = useState('')
+  const [username, setUsername] = useState('') // 🔴 loginId -> username 교정
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [name, setName] = useState('')
@@ -24,12 +24,12 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    // 💡 1. 백엔드 RegisterRequestDto 필수 조건 매칭 및 유효성 사전 검사
-    if (!loginId.trim() || !password.trim() || !name.trim()) {
+    // 💡 1. 백엔드 RegisterRequestDto 필수 조건 매칭 및 유효성 사전 검사 (🔴 username 기준 변경)
+    if (!username.trim() || !password.trim() || !name.trim()) {
       setError('필수 입력 항목(아이디, 비밀번호, 성명)을 입력해 주세요.')
       return
     }
-    if (loginId.length < 4 || loginId.length > 50) {
+    if (username.length < 4 || username.length > 50) {
       setError('아이디는 4자 이상 50자 이하로 입력해 주세요.')
       return
     }
@@ -44,8 +44,8 @@ export default function RegisterPage() {
 
     setIsLoading(true)
     try {
-      // 💡 2. 아까 완성한 authApi.js의 register 함수를 호출하여 백엔드 DTO 규격 그대로 post 전송
-      await apiRegister(loginId, password, name, email, phone)
+      // 💡 2. 아까 완성한 authApi.js의 register 함수를 호출하여 백엔드 DTO 규격 그대로 post 전송 (🔴 username으로 전달)
+      await apiRegister(username, password, name, email, phone)
       alert('한전 MIS 시스템에 회원가입이 완료되었습니다! 로그인 후 이용해 주세요.')
       navigate('/login')
     } catch (err) {
@@ -76,13 +76,13 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 아이디 입력 */}
               <div className="space-y-2">
-                <Label htmlFor="loginId">아이디 <span className="text-destructive">*</span></Label>
+                <Label htmlFor="username">아이디 <span className="text-destructive">*</span></Label>
                 <Input
-                  id="loginId"
+                  id="username"
                   type="text"
                   placeholder="4자 이상 50자 이하"
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)} // 🔴 setUsername 연동
                   disabled={isLoading}
                 />
               </div>
