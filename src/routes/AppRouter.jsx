@@ -1,12 +1,27 @@
 import { Routes, Route } from 'react-router-dom'
 import PublicLayout from '@/components/layout/PublicLayout'
-import Layout from '@/components/layout/Layout'
-import ProtectedRoute from './ProtectedRoute'
+import ProtectedRoute from './ProtectedRoute' // 🔒 권한 방어용 라우트 (존재 확인 필요)
+import Layout from '@/components/layout/Layout' // 💡 로그인 유저용 진짜 조립식 Layout 임포트
+import RegisterPage from '@/pages/auth/RegisterPage'
+
+// 📁 1. 공통 영역 (common / auth)
 import LandingPage from '@/pages/common/LandingPage'
+import LoginPage from '@/pages/auth/LoginPage'
 import HomePage from '@/pages/common/HomePage'
 import MyPage from '@/pages/common/MyPage'
-import ResourcePage from '@/pages/resource/ResourcePage'
+import NotFoundPage from '@/pages/common/NotFoundPage'
+
+// 📁 2. 기능별 실무 영역 (직무 이원화 매핑)
+import DashboardPage from '@/pages/dashboard/DashboardPage'
+import DispatchPage from '@/pages/dispatch/DispatchPage'
+import EmployeePage from '@/pages/employee/EmployeePage'
+import NoticePage from '@/pages/notice/NoticePage'
 import WorkPage from '@/pages/work/WorkPage'
+import ResourcePage from '@/pages/resource/ResourcePage'
+
+// 📁 3. 신고 처리 영역 (report)
+import ReportNewPage from '@/pages/report/ReportNewPage'
+import ReportMyPage from '@/pages/report/ReportMyPage'
 
 /**
  * 앱 라우팅 정의 (뼈대)
@@ -32,32 +47,51 @@ import WorkPage from '@/pages/work/WorkPage'
  *      <Route path="/work" element={<WorkPage />} />
  *    </Route>
  */
-
 export default function AppRouter() {
   return (
     <Routes>
-      {/* ===== 공개 영역 (로그인 전) ===== */}
+      {/* 🟢 [공개 영역] - 로그인 전 누구나 접근 가능 */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
-        {/* <Route path="/login" element={<LoginPage />} /> */}
+        <Route path="/login" element={<LoginPage />} />
+         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
-      {/* ===== 로그인 영역 (ProtectedRoute → Layout) ===== */}
+      {/* 🟡 [인증 필수 영역] - 로그인만 하면 누구나 (시민/임직원 공통) */}
       <Route element={<ProtectedRoute />}>
+        {/* 💡 Layout 컴포넌트로 내부 보호 경로들을 통째로 감싸서 상단바/사이드바를 조립합니다. */}
         <Route element={<Layout />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/mypage" element={<MyPage />} />
-
-          {/* 로그인하면 누구나 */}
+          <Route path="/notice" element={<NoticePage />} />
+          {/* 💡 Sidebar.jsx의 메뉴 주소인 /resources 와 철자를 완벽하게 일치시켰습니다. */}
           <Route path="/resources" element={<ResourcePage />} />
+          
+          {/* 민원 신고 접수 및 내역 확인 */}
+          <Route path="/report/new" element={<ReportNewPage />} />
+          <Route path="/report/my" element={<ReportMyPage />} />
 
-          {/* 출동요원만 (관리자는 항상 통과) */}
+          {/* 🔴 [인사팀 전용 권한 제한] - ROLE_HR 또는 ROLE_ADMIN만 */}
+          <Route element={<ProtectedRoute allowedRoles={['ROLE_HR', 'ROLE_ADMIN']} />}>
+            <Route path="/employee" element={<EmployeePage />} />
+          </Route>
+
+          {/* 🔴 [파견관리팀 전용 권한 제한] - ROLE_DISPATCHER, ROLE_DISPATCH 또는 ROLE_ADMIN만 */}
+          {/* 💡 Sidebar.jsx 및 백엔드 설정과의 크래시를 방지하기 위해 권한 명칭을 이중 매핑했습니다. */}
+          <Route element={<ProtectedRoute allowedRoles={['ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_ADMIN']} />}>
+            <Route path="/dispatch" element={<DispatchPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+          </Route>
+
+          {/* 🔴 [현장출동 기사 전용 권한 제한] - ROLE_WORKER만 */}
           <Route element={<ProtectedRoute allowedRoles={['ROLE_WORKER']} />}>
             <Route path="/work" element={<WorkPage />} />
           </Route>
-
         </Route>
       </Route>
+
+      {/* 🚫 [404 예외 처리] - 정의되지 않은 주소는 전부 NotFound 페이지로 */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

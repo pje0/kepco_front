@@ -1,66 +1,54 @@
 import axiosInstance from './axiosInstance'
 
-let mockEmployees = [
-  { id: 1, name: '정출동', role: 'ROLE_WORKER', department: '현장출동1팀', phone: '010-5678-9012', email: 'worker1@kepco.co.kr', status: 'ACTIVE', joinedAt: '2020-03-02' },
-  { id: 2, name: '한출동', role: 'ROLE_WORKER', department: '현장출동2팀', phone: '010-6789-0123', email: 'worker2@kepco.co.kr', status: 'ACTIVE', joinedAt: '2021-07-15' },
-  { id: 3, name: '박파견', role: 'ROLE_DISPATCH', department: '파견관리팀', phone: '010-3456-7890', email: 'dispatch1@kepco.co.kr', status: 'ACTIVE', joinedAt: '2019-01-10' },
-  { id: 4, name: '이인사', role: 'ROLE_HR', department: '인사팀', phone: '010-2345-6789', email: 'hr1@kepco.co.kr', status: 'ACTIVE', joinedAt: '2018-05-20' },
-  { id: 5, name: '최관리', role: 'ROLE_ADMIN', department: '시스템관리팀', phone: '010-4567-8901', email: 'admin1@kepco.co.kr', status: 'ACTIVE', joinedAt: '2017-11-01' },
-]
-let nextId = 6
+// 💡 vite.config.js에서 '/api' 경로를 프록시 처리하고 있으므로, 
+// 백엔드 AuthController에 튜닝 완료한 '/api/hr' 주소 체계와 완벽 동기화합니다.
+const API_BASE_URL = '/hr'
 
 /**
- * 직원 목록 조회
- * [실제] TODO: return axiosInstance.get('/employees', { params }).then(r => r.data)
+ * 1. [실제 DB] 임직원 명부 전체 조회
+ * - 백엔드 URL: GET /api/hr/users
+ * - 응답: AdminUserResponseDto 기반 임직원 전체 배열 반환
  */
 export async function getEmployees(params = {}) {
-  await new Promise((r) => setTimeout(r, 300))
-  let result = [...mockEmployees]
-  if (params.role) result = result.filter((e) => e.role === params.role)
-  if (params.department) result = result.filter((e) => e.department.includes(params.department))
-  return result
+  return axiosInstance.get(`${API_BASE_URL}/users`, { params })
+    .then((r) => r.data)
 }
 
 /**
- * 직원 단건 조회
- * [실제] TODO: return axiosInstance.get(`/employees/${id}`).then(r => r.data)
+ * 2. [실제 DB] 사원 단건 상세 조회
+ * - 백엔드 URL: GET /api/hr/user/{id}
  */
 export async function getEmployee(id) {
-  await new Promise((r) => setTimeout(r, 200))
-  const emp = mockEmployees.find((e) => e.id === Number(id))
-  if (!emp) throw new Error('직원을 찾을 수 없습니다.')
-  return emp
+  return axiosInstance.get(`${API_BASE_URL}/user/${id}`)
+    .then((r) => r.data)
 }
 
 /**
- * 직원 등록
- * [실제] TODO: return axiosInstance.post('/employees', data).then(r => r.data)
+ * 3. [실제 DB] 신입 사원 대행 등록
+ * - 백엔드 URL: POST /api/hr/user
+ * - 페이로드: AdminUserRegisterDto 11개 필드 규격
+ * - 주의: role 전송 시 백엔드 보정식에 맞게 접두사를 제외한 단어(WORKER 등)를 실어 보냅니다.
  */
-export async function createEmployee(data) {
-  await new Promise((r) => setTimeout(r, 400))
-  const newEmp = { id: nextId++, ...data, status: 'ACTIVE', joinedAt: new Date().toISOString().slice(0, 10) }
-  mockEmployees.push(newEmp)
-  return newEmp
+export async function createEmployee(adminUserData) {
+  return axiosInstance.post(`${API_BASE_URL}/user`, adminUserData)
+    .then((r) => r.data)
 }
 
 /**
- * 직원 정보 수정
- * [실제] TODO: return axiosInstance.put(`/employees/${id}`, data).then(r => r.data)
+ * 4. [실제 DB] 사원 정보 및 OpenAI 역량 스펙 통합 수정
+ * - 백엔드 URL: PUT /api/hr/user/{id}
+ * - 페이로드: AdminUserUpdateRequestDto 규격
  */
-export async function updateEmployee(id, data) {
-  await new Promise((r) => setTimeout(r, 300))
-  const idx = mockEmployees.findIndex((e) => e.id === Number(id))
-  if (idx === -1) throw new Error('직원을 찾을 수 없습니다.')
-  mockEmployees[idx] = { ...mockEmployees[idx], ...data }
-  return mockEmployees[idx]
+export async function updateEmployee(id, adminUserUpdateData) {
+  return axiosInstance.put(`${API_BASE_URL}/user/${id}`, adminUserUpdateData)
+    .then((r) => r.data)
 }
 
 /**
- * 직원 삭제
- * [실제] TODO: return axiosInstance.delete(`/employees/${id}`).then(r => r.data)
+ * 5. [실제 DB] 사원 퇴사 처리 (영구 삭제)
+ * - 백엔드 URL: DELETE /api/hr/user/{id}
  */
 export async function deleteEmployee(id) {
-  await new Promise((r) => setTimeout(r, 300))
-  mockEmployees = mockEmployees.filter((e) => e.id !== Number(id))
-  return { message: '삭제되었습니다.' }
+  return axiosInstance.delete(`${API_BASE_URL}/user/${id}`)
+    .then((r) => r.data)
 }
