@@ -174,31 +174,37 @@
   display: flex; justify-content: center; align-items: center; gap: 1rem; 
   margin-top: 2rem; padding-bottom: 2rem; 
 }
-.page-numbers { display: flex; gap: 0.25rem; }
+.page-numbers { display: flex; gap: 0.35rem; }
 
-/* 🚨 이전/다음 버튼 (글자 수에 맞춰 가로 길이가 유동적임) */
+/* 🚨 이전/다음 버튼 (둥근 알약 형태) */
 .page-btn {
   background: white; border: 1px solid #cbd5e1; color: #475569;
-  padding: 0.4rem 0.75rem; border-radius: 4px; font-size: 0.875rem; 
+  padding: 0.4rem 0.85rem; 
+  border-radius: 9999px; /* 둥근 모서리로 알약 형태 구현 */
+  font-size: 0.875rem; font-weight: 500;
   cursor: pointer; transition: all 0.2s;
 }
 .page-btn:hover:not(:disabled) { background-color: #f1f5f9; }
-.page-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f8fafc; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; background-color: #f8fafc; }
 
-/* 🚨 숫자 버튼 (1자리든 2자리든 크기가 똑같은 완벽한 정사각형) */
+/* 🚨 숫자 버튼 (완벽한 동그라미) */
 .page-number {
   background: white; border: 1px solid #cbd5e1; color: #475569;
-  width: 32px; /* 가로 크기 고정 */
-  height: 32px; /* 세로 크기 고정 */
-  display: flex; /* 중앙 정렬용 */
-  align-items: center;
-  justify-content: center;
-  padding: 0; /* 글자 수에 따라 너비가 늘어나지 않도록 패딩 제거 */
-  border-radius: 4px; font-size: 0.875rem; 
+  width: 34px; height: 34px; 
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; 
+  border-radius: 50%; /* 50%를 주어 완벽한 원형으로 구현 */
+  font-size: 0.875rem; font-weight: 500;
   cursor: pointer; transition: all 0.2s;
 }
 .page-number:hover:not(.active) { background-color: #f1f5f9; }
-.page-number.active { background-color: #1e3a8a; color: white; border-color: #1e3a8a; font-weight: bold; }
+.page-number.active { 
+  background-color: #1e3a8a; 
+  color: white; 
+  border-color: #1e3a8a; 
+  font-weight: 700; 
+  box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2); /* 현재 페이지 강조를 위한 그림자 추가 */
+}
 
 /* ── 6. 인쇄 최적화 ── */
 @media print {

@@ -3,7 +3,8 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getNotice, getNotices } from '@/api/noticeApi'; 
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { FileText, Calendar, Eye, User, Printer, ListOrdered } from 'lucide-react';
+import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link, Type } from 'lucide-react';
+import { toast } from 'sonner';
 import './NoticePage.css';
 
 export default function NoticeDetailPage() {
@@ -14,8 +15,10 @@ export default function NoticeDetailPage() {
 
   const [notice, setNotice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
   const [surroundingPosts, setSurroundingPosts] = useState([]);
+  
+  // 🚨 [신규 기능 3] 폰트 크기 상태 (기본 16px)
+  const [fontSize, setFontSize] = useState(16);
 
   useEffect(() => {
     if (noticeId) {
@@ -26,11 +29,9 @@ export default function NoticeDetailPage() {
   const loadNoticeAndNeighbors = async () => {
     setIsLoading(true);
     try {
-      // 1. 현재 상세 데이터 수집
       const currentData = await getNotice(noticeId);
       setNotice(currentData);
 
-      // 2. 전체 목록에서 주변 게시글 추출
       const allList = await getNotices();
       if (Array.isArray(allList)) {
         allList.sort((a, b) => {
@@ -38,7 +39,6 @@ export default function NoticeDetailPage() {
           return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
-        // 🚨 목록에서 보던 것과 동일하게 화면용 번호(displayNum)를 미리 계산해서 부여합니다.
         const listWithNums = allList.map((item, index) => ({
           ...item,
           displayNum: item.isPinned ? '공지' : allList.length - index
@@ -49,7 +49,6 @@ export default function NoticeDetailPage() {
         if (currentIndex !== -1) {
           const startIdx = Math.max(0, currentIndex - 2);
           const endIdx = Math.min(listWithNums.length - 1, currentIndex + 2);
-          
           setSurroundingPosts(listWithNums.slice(startIdx, endIdx + 1));
         }
       }
@@ -64,16 +63,20 @@ export default function NoticeDetailPage() {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   };
 
   const handleDetailPrint = () => window.print();
   const handleGoBack = () => navigate(`/notice?page=${originPage}`);
+
+  // 🚨 [신규 기능 4] 다이렉트 링크 복사
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("링크가 클립보드에 복사되었습니다.", { position: 'bottom-right' });
+    });
+  };
 
   if (isLoading) return <LoadingSpinner className="h-64" />;
 
@@ -95,7 +98,7 @@ export default function NoticeDetailPage() {
       <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden print:shadow-none print:border-black">
         
         <div className="border-t-4 border-t-blue-700 p-8 border-b border-slate-100 bg-white">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
             <div className="flex items-center gap-3">
               {notice.priority === 'high' && (
                 <Badge className="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1">필독 공지</Badge>
@@ -105,12 +108,36 @@ export default function NoticeDetailPage() {
               </span>
             </div>
             
-            <button 
-              className="print-hide flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded hover:bg-slate-100 transition-colors"
-              onClick={handleDetailPrint}
-            >
-              <Printer size={14} /> 인쇄하기
-            </button>
+            {/* 🚨 우측 상단 유틸리티 버튼 그룹 (폰트, 링크, 인쇄) */}
+            <div className="print-hide flex items-center gap-2">
+              <div className="flex items-center bg-slate-100 rounded-full border border-slate-200 p-0.5">
+                <button 
+                  className="px-2.5 py-1 text-slate-500 hover:bg-white hover:text-black rounded-full transition-colors" title="글자 작게"
+                  onClick={() => setFontSize(prev => Math.max(12, prev - 2))}
+                >
+                  <Type size={14} />-
+                </button>
+                <div className="w-px h-3 bg-slate-300 mx-0.5"></div>
+                <button 
+                  className="px-2.5 py-1 text-slate-500 hover:bg-white hover:text-black rounded-full transition-colors font-bold" title="글자 크게"
+                  onClick={() => setFontSize(prev => Math.min(24, prev + 2))}
+                >
+                  <Type size={16} />+
+                </button>
+              </div>
+              <button 
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded-full hover:bg-slate-100 transition-colors" 
+                onClick={handleCopyLink} title="주소 복사"
+              >
+                <Link size={14} /> 공유
+              </button>
+              <button 
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded-full hover:bg-slate-100 transition-colors"
+                onClick={handleDetailPrint}
+              >
+                <Printer size={14} /> 인쇄
+              </button>
+            </div>
           </div>
           
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 leading-snug tracking-tight">
@@ -135,8 +162,12 @@ export default function NoticeDetailPage() {
           </div>
         </div>
 
+        {/* 🚨 본문에 동적 폰트 스타일 적용 */}
         <div className="p-8 md:p-10 min-h-[300px]">
-          <div className="prose max-w-none text-slate-800 leading-loose whitespace-pre-wrap text-[15px] md:text-base">
+          <div 
+            className="prose max-w-none text-slate-800 leading-loose whitespace-pre-wrap transition-all"
+            style={{ fontSize: `${fontSize}px` }}
+          >
             {notice.content}
           </div>
         </div>
@@ -165,7 +196,6 @@ export default function NoticeDetailPage() {
                   if (!isCurrent) navigate(`/notice/${p.id}?page=${originPage}`);
                 }}
               >
-                {/* 🚨 수정됨: 하이픈(-) 대신 실제 게시글 번호 또는 '공지' 텍스트를 출력합니다. */}
                 <span className={`w-16 shrink-0 text-xs text-center font-medium ${
                   isCurrent ? 'text-blue-600 font-bold' : 'text-slate-400'
                 }`}>

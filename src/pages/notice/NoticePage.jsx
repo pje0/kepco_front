@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Search, Printer, Eye } from 'lucide-react';
+import { Bell, Search, Printer, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -7,23 +7,29 @@ import useNoticeLogic from './useNoticeLogic';
 import './NoticePage.css';
 
 export default function NoticePage() {
-  console.log("NoticePage 렌더링 파이프라인 가동");
-  
   const {
     notices, isLoading,
     startDate, endDate, rangeType, searchCondition, searchKeyword, searchDept,
     setSearchCondition, setSearchKeyword, setSearchDept,
     sortBy, setSortBy, pageSize, setPageSize, currentPage,
-    isModalOpen, setIsModalOpen, modalData,
+    isModalOpen, setIsModalOpen, modalData, modalIndex, handleModalNav,
     filteredAndSortedNotices, currentNotices, totalPages, pageNumbers, indexOfFirstNotice,
     paginate, handleDateRange, handleDateChange, isNewPost, displayDate,
-    handlePrint, handleSearch, handleTitleClick, openQuickView
+    handlePrint, handleSearch, handleTitleClick, openQuickView,
+    appliedFilters, visitedPosts
   } = useNoticeLogic();
 
-  if (isLoading) {
-    console.log("NoticePage 렌더링 대기 - 로딩 스피너 활성화 상태");
-    return <LoadingSpinner className="h-64" />;
-  }
+  // 🚨 [신규 기능 2] 검색어 하이라이팅 함수
+  const highlightText = (text, keyword) => {
+    if (!keyword || !text) return text;
+    const parts = text.split(new RegExp(`(${keyword})`, 'gi'));
+    return parts.map((part, i) => 
+      part.toLowerCase() === keyword.toLowerCase() ? 
+        <span key={i} className="bg-yellow-200 text-blue-900 font-bold px-0.5 rounded">{part}</span> : part
+    );
+  };
+
+  if (isLoading) return <LoadingSpinner className="h-64" />;
 
   return (
     <div className="notice-container">
@@ -131,6 +137,9 @@ export default function NoticePage() {
                 const deptName = notice.department || notice.author || '시스템관리팀';
                 const realIndex = filteredAndSortedNotices.length - (indexOfFirstNotice + index);
                 
+                // 🚨 String 변환으로 타입 불일치 방지 (완벽한 방문 기록 체크)
+                const isVisited = visitedPosts && visitedPosts.some(vId => String(vId) === String(notice.id));
+                
                 return (
                   <tr key={notice.id} className="table-row">
                     <td className="td-num">
@@ -140,14 +149,20 @@ export default function NoticePage() {
                       <button className="quick-view-btn" title="간단히 보기 (모달)" onClick={() => openQuickView(notice)}>
                         <Eye size={18} />
                       </button>
-                      <span className={`title-link ${notice.isPinned ? 'font-bold text-black' : ''}`} onClick={() => handleTitleClick(notice.id)} title="상세 페이지로 이동">
-                        {notice.title}
+                      <span 
+                        className={`title-link transition-colors ${
+                          notice.isPinned ? 'font-bold text-black' : ''
+                        } ${isVisited ? 'text-slate-400' : 'text-slate-700'}`} 
+                        onClick={() => handleTitleClick(notice.id)} 
+                        title="상세 페이지로 이동"
+                      >
+                        {highlightText(notice.title, appliedFilters.keyword)}
                       </span>
                       {isNewPost(notice.createdAt) && <span className="icon-n">N</span>}
                     </td>
-                    <td className="td-dept">{deptName}</td>
-                    <td className="td-date">{displayDate(notice.createdAt)}</td>
-                    <td className="td-views font-semibold text-slate-600">{notice.views}</td>
+                    <td className={`td-dept ${isVisited ? 'text-slate-400' : ''}`}>{deptName}</td>
+                    <td className={`td-date ${isVisited ? 'text-slate-400' : ''}`}>{displayDate(notice.createdAt)}</td>
+                    <td className={`td-views font-semibold ${isVisited ? 'text-slate-400' : 'text-slate-600'}`}>{notice.views}</td>
                   </tr>
                 );
               })
@@ -171,13 +186,13 @@ export default function NoticePage() {
         </div>
       )}
 
-      {/* ── 5. 간단히 보기 기능 모달 팝업 윈도우 (이전글/다음글 하단 삭제본) ── */}
+      {/* ── 5. 간단히 보기 기능 모달 팝업 윈도우 ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[650px]">
           <DialogHeader>
             <DialogTitle className="text-xl leading-relaxed text-slate-900 pr-6">
               {modalData?.priority === 'high' && <Badge className="bg-red-500 mr-2">필독</Badge>}
-              {modalData ? modalData.title : '데이터를 불러오는 중입니다...'}
+              {modalData ? highlightText(modalData.title, appliedFilters.keyword) : '데이터를 불러오는 중입니다...'}
             </DialogTitle>
             <DialogDescription className="flex items-center gap-2 mt-2 pt-2 border-t">
               <span className="font-medium text-blue-800">{modalData?.department}</span>
@@ -189,7 +204,28 @@ export default function NoticePage() {
           </DialogHeader>
 
           <div className="min-h-[150px] max-h-[400px] overflow-y-auto py-4 text-slate-700 whitespace-pre-wrap leading-loose">
-            {modalData ? modalData.content : <LoadingSpinner className="h-24" />}
+            {modalData ? highlightText(modalData.content, appliedFilters.keyword) : <LoadingSpinner className="h-24" />}
+          </div>
+
+          {/* 🚨 추가됨: 하단 심플 화살표 네비게이션 */}
+          <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 print-hide">
+            <button
+              onClick={() => handleModalNav(-1)}
+              disabled={modalIndex <= 0}
+              className="p-2 -ml-2 text-slate-300 hover:text-blue-600 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title="이전 글"
+            >
+              <ChevronLeft size={36} strokeWidth={1.5} />
+            </button>
+
+            <button
+              onClick={() => handleModalNav(1)}
+              disabled={modalIndex >= filteredAndSortedNotices.length - 1}
+              className="p-2 -mr-2 text-slate-300 hover:text-blue-600 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title="다음 글"
+            >
+              <ChevronRight size={36} strokeWidth={1.5} />
+            </button>
           </div>
         </DialogContent>
       </Dialog>
