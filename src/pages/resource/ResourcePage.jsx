@@ -37,7 +37,7 @@ export default function ResourcePage() {
 
       {/* 필터 */}
       <div className="flex items-center gap-3">
-        <Select
+        <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="w-40"
@@ -47,7 +47,7 @@ export default function ResourcePage() {
           <option value="교육자료">교육자료</option>
           <option value="보고서">보고서</option>
           <option value="서식">서식</option>
-        </Select>
+        </select>
       </div>
 
       <Card>

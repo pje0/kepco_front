@@ -5,6 +5,8 @@ import ProtectedRoute from './ProtectedRoute'
 import LandingPage from '@/pages/common/LandingPage'
 import HomePage from '@/pages/common/HomePage'
 import MyPage from '@/pages/common/MyPage'
+import ResourcePage from '@/pages/resource/ResourcePage'
+import WorkPage from '@/pages/work/WorkPage'
 
 /**
  * 앱 라우팅 정의 (뼈대)
@@ -31,7 +33,6 @@ import MyPage from '@/pages/common/MyPage'
  *    </Route>
  */
 
-
 export default function AppRouter() {
   return (
     <Routes>
@@ -47,7 +48,13 @@ export default function AppRouter() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/mypage" element={<MyPage />} />
 
-          {/* 여기에 각자 보호 페이지를 위 주석 패턴대로 추가 */}
+          {/* 로그인하면 누구나 */}
+          <Route path="/resources" element={<ResourcePage />} />
+
+          {/* 출동요원만 (관리자는 항상 통과) */}
+          <Route element={<ProtectedRoute allowedRoles={['ROLE_WORKER']} />}>
+            <Route path="/work" element={<WorkPage />} />
+          </Route>
 
         </Route>
       </Route>
