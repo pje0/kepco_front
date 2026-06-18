@@ -1,6 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
 import PublicLayout from '@/components/layout/PublicLayout'
+import Layout from '@/components/layout/Layout'
+import ProtectedRoute from './ProtectedRoute'
 import LandingPage from '@/pages/common/LandingPage'
+import HomePage from '@/pages/common/HomePage'
+import MyPage from '@/pages/common/MyPage'
 
 /**
  * 앱 라우팅 정의 (뼈대)
@@ -26,17 +30,27 @@ import LandingPage from '@/pages/common/LandingPage'
  *      <Route path="/work" element={<WorkPage />} />
  *    </Route>
  */
+
+
 export default function AppRouter() {
   return (
     <Routes>
-      {/* 공개 영역 (로그인 전) */}
+      {/* ===== 공개 영역 (로그인 전) ===== */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         {/* <Route path="/login" element={<LoginPage />} /> */}
       </Route>
 
-      {/* ===== 여기에 각자 라우트를 추가 ===== */}
+      {/* ===== 로그인 영역 (ProtectedRoute → Layout) ===== */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/mypage" element={<MyPage />} />
 
+          {/* 여기에 각자 보호 페이지를 위 주석 패턴대로 추가 */}
+
+        </Route>
+      </Route>
     </Routes>
   )
 }
