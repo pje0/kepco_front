@@ -1,0 +1,198 @@
+import React from 'react';
+import { Bell, Search, Printer, Eye } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import useNoticeLogic from './useNoticeLogic';
+import './NoticePage.css';
+
+export default function NoticePage() {
+  console.log("NoticePage 렌더링 파이프라인 가동");
+  
+  const {
+    notices, isLoading,
+    startDate, endDate, rangeType, searchCondition, searchKeyword, searchDept,
+    setSearchCondition, setSearchKeyword, setSearchDept,
+    sortBy, setSortBy, pageSize, setPageSize, currentPage,
+    isModalOpen, setIsModalOpen, modalData,
+    filteredAndSortedNotices, currentNotices, totalPages, pageNumbers, indexOfFirstNotice,
+    paginate, handleDateRange, handleDateChange, isNewPost, displayDate,
+    handlePrint, handleSearch, handleTitleClick, openQuickView
+  } = useNoticeLogic();
+
+  if (isLoading) {
+    console.log("NoticePage 렌더링 대기 - 로딩 스피너 활성화 상태");
+    return <LoadingSpinner className="h-64" />;
+  }
+
+  return (
+    <div className="notice-container">
+      <div className="notice-header print-hide">
+        <Bell className="notice-icon" />
+        <h1 className="notice-title">공지사항</h1>
+      </div>
+
+      {/* ── 1. 상단 조건별 통합 검색 바 영역 ── */}
+      <div className="search-box print-hide">
+        <div className="search-row">
+          <label className="search-label">등록일</label>
+          <div className="search-input-group">
+            <input type="date" className="input-box w-32" value={startDate} onChange={(e) => handleDateChange(true, e.target.value)} />
+            <span className="tilde">~</span>
+            <input type="date" className="input-box w-32" value={endDate} onChange={(e) => handleDateChange(false, e.target.value)} />
+            <div className="quick-btn-group">
+              {['직접입력', '오늘', '1주일', '1개월', '6개월', '1년'].map((btn) => (
+                <button key={btn} className={`quick-btn ${rangeType === btn ? 'active' : ''}`} onClick={() => handleDateRange(btn)}>
+                  {btn}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="search-row mt-3">
+          <label className="search-label">검색어</label>
+          <div className="search-input-group flex-1">
+            <select className="input-box w-28" value={searchCondition} onChange={(e) => setSearchCondition(e.target.value)}>
+              <option value="title_content">제목+내용</option>
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+            </select>
+            <input 
+              type="text" 
+              className="input-box flex-1" 
+              placeholder="검색어를 입력하세요" 
+              value={searchKeyword} 
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()} 
+            />
+            <div className="divider" />
+            <label className="search-label w-auto pr-2">부서찾기</label>
+            <select className="input-box w-36" value={searchDept} onChange={(e) => setSearchDept(e.target.value)}>
+              <option value="전체">전체 부서</option>
+              <option value="총괄관리부">총괄관리부</option>
+              <option value="인사관리팀">인사관리팀</option>
+              <option value="시스템운영팀">시스템운영팀</option>
+              <option value="안전관리본부">안전관리본부</option>
+            </select>
+            <button className="search-submit-btn" onClick={handleSearch}>
+              <Search size={16} /> 조회
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. 중단 데이터 제어 바 영역 ── */}
+      <div className="control-bar print-hide">
+        <div className="control-left">
+          <span className="total-count">
+            조회 결과 <strong className="text-blue-700">{filteredAndSortedNotices.length}</strong>건 
+            <span className="text-slate-400 ml-1">(전체 {notices.length}건)</span>
+          </span>
+        </div>
+        <div className="control-right">
+          <select className="input-box" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="latest">최신순</option>
+            <option value="title">제목순</option>
+            <option value="dept">부서순</option>
+            <option value="views">조회순</option>
+          </select>
+          <select className="input-box" value={pageSize} onChange={(e) => setPageSize(e.target.value)}>
+            <option value="10">10개씩 보기</option>
+            <option value="20">20개씩 보기</option>
+            <option value="30">30개씩 보기</option>
+            <option value="40">40개씩 보기</option>
+            <option value="50">50개씩 보기</option>
+          </select>
+          <button className="print-btn" onClick={handlePrint}>
+            <Printer size={16} /> 현재 화면 인쇄
+          </button>
+        </div>
+      </div>
+
+      {/* ── 3. 메인 게시판 리스트 테이블 ── */}
+      <div className="table-wrapper">
+        <table className="notice-table">
+          <thead>
+            <tr>
+              <th className="th-num">번호</th>
+              <th className="th-title">제목</th>
+              <th className="th-dept">작성부서</th>
+              <th className="th-date">작성일</th>
+              <th className="th-views">조회수</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentNotices.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="empty-message">검색 조건에 일치하는 공지사항이 없습니다.</td>
+              </tr>
+            ) : (
+              currentNotices.map((notice, index) => {
+                const deptName = notice.department || notice.author || '시스템관리팀';
+                const realIndex = filteredAndSortedNotices.length - (indexOfFirstNotice + index);
+                
+                return (
+                  <tr key={notice.id} className="table-row">
+                    <td className="td-num">
+                      {notice.isPinned ? <Badge className="badge-pinned">공지</Badge> : realIndex}
+                    </td>
+                    <td className="td-title text-left">
+                      <button className="quick-view-btn" title="간단히 보기 (모달)" onClick={() => openQuickView(notice)}>
+                        <Eye size={18} />
+                      </button>
+                      <span className={`title-link ${notice.isPinned ? 'font-bold text-black' : ''}`} onClick={() => handleTitleClick(notice.id)} title="상세 페이지로 이동">
+                        {notice.title}
+                      </span>
+                      {isNewPost(notice.createdAt) && <span className="icon-n">N</span>}
+                    </td>
+                    <td className="td-dept">{deptName}</td>
+                    <td className="td-date">{displayDate(notice.createdAt)}</td>
+                    <td className="td-views font-semibold text-slate-600">{notice.views}</td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── 4. 하단 고정 스퀘어형 페이지네이션 바 ── */}
+      {totalPages > 0 && (
+        <div className="pagination-container print-hide">
+          <button className="page-btn" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>이전</button>
+          <div className="page-numbers">
+            {pageNumbers.map(number => (
+              <button key={number} className={`page-number ${currentPage === number ? 'active' : ''}`} onClick={() => paginate(number)}>
+                {number}
+              </button>
+            ))}
+          </div>
+          <button className="page-btn" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>다음</button>
+        </div>
+      )}
+
+      {/* ── 5. 간단히 보기 기능 모달 팝업 윈도우 (이전글/다음글 하단 삭제본) ── */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl leading-relaxed text-slate-900 pr-6">
+              {modalData?.priority === 'high' && <Badge className="bg-red-500 mr-2">필독</Badge>}
+              {modalData ? modalData.title : '데이터를 불러오는 중입니다...'}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 mt-2 pt-2 border-t">
+              <span className="font-medium text-blue-800">{modalData?.department}</span>
+              <span className="text-slate-300">|</span>
+              <span className="font-medium text-slate-700">{modalData?.author}</span>
+              <span className="text-slate-300">|</span>
+              <span>{modalData ? displayDate(modalData.createdAt) : ''}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="min-h-[150px] max-h-[400px] overflow-y-auto py-4 text-slate-700 whitespace-pre-wrap leading-loose">
+            {modalData ? modalData.content : <LoadingSpinner className="h-24" />}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
