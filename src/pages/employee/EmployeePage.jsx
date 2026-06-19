@@ -371,7 +371,7 @@ export default function EmployeePage() {
                 <TableHead>연락처</TableHead>
                 <TableHead>이메일</TableHead>
                 <TableHead>입사일</TableHead>
-                <TableHead className="text-right w-[80px]">관리</TableHead>
+                <TableHead className="text-center w-[120px] pr-6">관리</TableHead>
               </TableRow>
             </TableHeader>
              <TableBody>
@@ -384,30 +384,37 @@ export default function EmployeePage() {
               ) : (
                 filtered.map((emp) => (
                   <TableRow key={emp.id} className="hover:bg-muted/40 transition-colors">
-                    {/* 🎯 사원 이름 열을 클릭 가능한 링크 스타일로 바인딩 */}
-                    <TableCell className="font-semibold">
-                      <span 
-                        onClick={() => handleNameClick(emp)} 
-                        className="text-primary hover:underline cursor-pointer decoration-2 underline-offset-2"
-                      >
-                        {emp.name}
-                      </span>
+                    {/* 🎯 사원 이름 열의 기존 마우스 클릭 핸들러 제거 후 순수 텍스트로 복원 */}
+                    <TableCell className="font-semibold text-foreground">
+                      {emp.name}
                     </TableCell>
                     <TableCell><RoleBadge role={emp.role} /></TableCell>
                     <TableCell>{emp.department || '-'}</TableCell>
                     <TableCell>{emp.phone || '-'}</TableCell>
                     <TableCell>{emp.email}</TableCell>
                     <TableCell>{emp.hiredAt || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 h-8 w-8"
-                        onClick={() => handleDelete(emp.id, emp.name)}
-                        disabled={isSubmitting}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    {/* 관리 액션 버튼 영역: 오른쪽 정렬(justify-end)을 중앙 정렬(justify-center)로 완벽 교정 */}
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-primary hover:text-primary/90 hover:bg-primary/10 h-8 w-8"
+                          onClick={() => handleNameClick(emp)}
+                          disabled={isSubmitting}
+                        >
+                          <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 h-8 w-8"
+                          onClick={() => handleDelete(emp.id, emp.name)}
+                          disabled={isSubmitting}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
