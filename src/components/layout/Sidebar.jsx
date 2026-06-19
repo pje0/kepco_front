@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   // 인사
   { to: '/employee',  label: '인사관리',  icon: Users,         roles: ['ROLE_HR'] },
   // 파견
-  { to: '/dispatch',  label: '파견 관리', icon: Truck,         roles: ['ROLE_DISPATCH'] },
+  { to: '/dispatch',  label: '파견 관리', icon: Truck,         roles: ['ROLE_DISPATCHER'] },
   // 출동요원
   { to: '/work',      label: '출동 확인', icon: HardHat,       roles: ['ROLE_WORKER'] },
   // 관리자
