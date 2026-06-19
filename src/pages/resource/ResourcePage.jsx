@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { FolderOpen, Download, FileText } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Select } from '@/components/ui/select'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { getResources } from '@/api/resourceApi'
+import { getResources, downloadResource } from '@/api/resourceApi'
 
 const FILE_TYPE_COLOR = {
-  PDF:  'bg-red-100 text-red-700',
+  PDF: 'bg-red-100 text-red-700',
   PPTX: 'bg-orange-100 text-orange-700',
   DOCX: 'bg-blue-100 text-blue-700',
   XLSX: 'bg-green-100 text-green-700',
@@ -75,7 +73,8 @@ export default function ResourcePage() {
                   variant="outline"
                   size="sm"
                   className="shrink-0"
-                  onClick={() => alert('실제 연동 시 파일 다운로드가 실행됩니다.')}
+                  disabled={!res.fileUrl}
+                  onClick={() => downloadResource(res.id)}
                 >
                   <Download className="h-4 w-4 mr-1" />
                   다운로드

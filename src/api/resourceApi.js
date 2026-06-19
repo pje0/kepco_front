@@ -10,10 +10,6 @@ const mockResources = [
 
 /**
  * 자료실 목록 조회
- * 현재 mock
- * 실제 TODO: return axiosInstance.get('/api/archive', { params }).then((r) => r.data)
- *
- * 백엔드 GET /api/archive 가 돌려줘야 할 한 건의 모양 (archive + archive_attachment 기준):
  *   { id, title, category, fileType, fileSize, uploadedAt, downloads, fileUrl }
  *     id         ← archive.id
  *     title      ← archive.title
@@ -25,8 +21,35 @@ const mockResources = [
  *     fileUrl    ← archive_attachment.file_url (다운로드용)
  */
 export async function getResources(params = {}) {
-  await new Promise((r) => setTimeout(r, 200))
-  let result = [...mockResources]
-  if (params.category) result = result.filter((r) => r.category === params.category)
-  return result
+  return axiosInstance.get('/archive', { params }).then((r) => r.data)
+}
+
+export async function downloadResource(id) {
+  try {
+    const res = await axiosInstance.get(`/archive/${id}/download`, { responseType: 'blob' })
+
+    // 파일명 추출 (디코딩 실패해도 죽지 않게)
+    const disposition = res.headers['content-disposition'] || ''
+    let filename = 'download'
+    const match = disposition.match(/filename="?([^";]+)"?/i)
+    if (match) {
+      try {
+        filename = decodeURIComponent(match[1])
+      } catch {
+        filename = match[1]   // 디코딩 안 되면 원본 그대로 사용
+      }
+    }
+
+    const url = window.URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)   // DOM에 붙여야 click이 확실히 동작
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('다운로드 실패:', e)
+    alert('다운로드에 실패했습니다. 콘솔을 확인해주세요.')
+  }
 }
