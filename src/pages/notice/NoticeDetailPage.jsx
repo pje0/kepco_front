@@ -17,7 +17,7 @@ export default function NoticeDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [surroundingPosts, setSurroundingPosts] = useState([]);
   
-  // 🚨 [신규 기능 3] 폰트 크기 상태 (기본 16px)
+  // 글자 크기 조절 상태
   const [fontSize, setFontSize] = useState(16);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function NoticeDetailPage() {
   const handleDetailPrint = () => window.print();
   const handleGoBack = () => navigate(`/notice?page=${originPage}`);
 
-  // 🚨 [신규 기능 4] 다이렉트 링크 복사
+  // 링크 복사 (실제 작동)
   const handleCopyLink = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -108,31 +108,36 @@ export default function NoticeDetailPage() {
               </span>
             </div>
             
-            {/* 🚨 우측 상단 유틸리티 버튼 그룹 (폰트, 링크, 인쇄) */}
+            {/* 🚨 우측 상단 유틸리티 버튼 그룹 (심플하게 변경) */}
             <div className="print-hide flex items-center gap-2">
-              <div className="flex items-center bg-slate-100 rounded-full border border-slate-200 p-0.5">
+              {/* 글꼴 크기 조절 */}
+              <div className="flex items-center bg-slate-50 rounded border border-slate-200 p-0.5">
                 <button 
-                  className="px-2.5 py-1 text-slate-500 hover:bg-white hover:text-black rounded-full transition-colors" title="글자 작게"
+                  className="px-2 py-1 text-slate-500 hover:bg-white hover:text-black rounded transition-colors" title="글자 작게"
                   onClick={() => setFontSize(prev => Math.max(12, prev - 2))}
                 >
                   <Type size={14} />-
                 </button>
                 <div className="w-px h-3 bg-slate-300 mx-0.5"></div>
                 <button 
-                  className="px-2.5 py-1 text-slate-500 hover:bg-white hover:text-black rounded-full transition-colors font-bold" title="글자 크게"
+                  className="px-2 py-1 text-slate-500 hover:bg-white hover:text-black rounded transition-colors font-bold" title="글자 크게"
                   onClick={() => setFontSize(prev => Math.min(24, prev + 2))}
                 >
                   <Type size={16} />+
                 </button>
               </div>
+              
+              {/* 공유 버튼 */}
               <button 
-                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded-full hover:bg-slate-100 transition-colors" 
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded hover:bg-slate-100 transition-colors" 
                 onClick={handleCopyLink} title="주소 복사"
               >
                 <Link size={14} /> 공유
               </button>
+              
+              {/* 인쇄 버튼 */}
               <button 
-                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded-full hover:bg-slate-100 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-300 rounded hover:bg-slate-100 transition-colors"
                 onClick={handleDetailPrint}
               >
                 <Printer size={14} /> 인쇄
@@ -162,7 +167,6 @@ export default function NoticeDetailPage() {
           </div>
         </div>
 
-        {/* 🚨 본문에 동적 폰트 스타일 적용 */}
         <div className="p-8 md:p-10 min-h-[300px]">
           <div 
             className="prose max-w-none text-slate-800 leading-loose whitespace-pre-wrap transition-all"

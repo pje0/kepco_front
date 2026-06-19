@@ -103,11 +103,11 @@ export default function NoticePage() {
             <option value="views">조회순</option>
           </select>
           <select className="input-box" value={pageSize} onChange={(e) => setPageSize(e.target.value)}>
-            <option value="10">10개씩 보기</option>
-            <option value="20">20개씩 보기</option>
-            <option value="30">30개씩 보기</option>
-            <option value="40">40개씩 보기</option>
-            <option value="50">50개씩 보기</option>
+            <option value="10">10개씩</option>
+            <option value="20">20개씩</option>
+            <option value="30">30개씩</option>
+            <option value="40">40개씩</option>
+            <option value="50">50개씩</option>
           </select>
           <button className="print-btn" onClick={handlePrint}>
             <Printer size={16} /> 현재 화면 인쇄

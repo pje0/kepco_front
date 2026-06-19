@@ -1,6 +1,7 @@
 /* ── 1. 공통 컨테이너 뷰포트 ── */
 .notice-container {
   width: 100%;
+  min-width: 900px; /* 화면(뷰포트) 전체 가로 넓이의 50% 이하로 줄어들지 않도록 고정 */
   margin: 0 auto;
   font-family: 'Pretendard', sans-serif;
   color: #334155;
@@ -76,8 +77,12 @@
 .divider { width: 1px; height: 20px; background-color: #cbd5e1; margin: 0 0.5rem; }
 
 .quick-btn-group { display: flex; gap: 0.25rem; margin-left: 0.5rem; }
+
+/* 🚨 '오늘', '1주일', '1개월' 등 나머지 5개 버튼 크기 완벽 통일 */
 .quick-btn {
-  padding: 0.35rem 0.6rem;
+  padding: 0.35rem 0;
+  width: 56px; /* 가로 크기 고정 */
+  text-align: center; /* 텍스트 중앙 정렬 */
   border: 1px solid #cbd5e1;
   background-color: white;
   border-radius: 4px;
@@ -86,6 +91,12 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+
+/* 🚨 첫 번째인 '직접입력' 버튼만 글자 수(4자)에 맞춰 조금 더 넓게 설정 */
+.quick-btn:first-child {
+  width: 72px; 
+}
+
 .quick-btn:hover { background-color: #f1f5f9; }
 .quick-btn.active { background-color: #334155; color: white; border-color: #334155; font-weight: 600; }
 
