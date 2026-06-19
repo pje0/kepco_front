@@ -69,3 +69,10 @@ export async function register(username, password, name, email, phone) {
     phone
   }).then(res => res.data)
 }
+
+/**
+ * 마이페이지 정보 수정
+ */
+export async function updateProfile(data) {
+  return axiosInstance.put('/user/me', data).then((res) => res.data)
+}
