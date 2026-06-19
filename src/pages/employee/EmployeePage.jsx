@@ -40,8 +40,7 @@ export default function EmployeePage() {
     certificate: '',
     grade: 'JUNIOR'
   })
-  
-  const [formError, setFormError] = useState('')
+    const [formError, setFormError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const loadEmployees = () => {
@@ -118,7 +117,8 @@ export default function EmployeePage() {
       role: 'WORKER', empNumber: '', department: '', assignedDistrict: '', certificate: '', grade: 'JUNIOR'
     })
   }
-    // 🎯 [등록 및 수정 통합 제출 핸들러]
+
+  // 🎯 [등록 및 수정 통합 제출 핸들러]
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     setFormError('')
@@ -144,6 +144,7 @@ export default function EmployeePage() {
           name: form.name,
           email: form.email,
           phone: form.phone,
+          role: form.role,
           empNumber: form.empNumber,
           department: form.department,
           assignedDistrict: form.assignedDistrict,
@@ -174,7 +175,6 @@ export default function EmployeePage() {
       alert('삭제 실패: ' + (err.response?.data?.message || err.message))
     }
   }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -291,7 +291,7 @@ export default function EmployeePage() {
                       ))}
                     </select>
                   </div>
-                   <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label>기술 숙련도 직급</Label>
                     <select 
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -344,7 +344,7 @@ export default function EmployeePage() {
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? '처리 중...' : isEditMode ? '수정 완료' : '등록'}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCloseForm}>취소</Button>
+<Button type="button" variant="outline" onClick={handleCloseForm}>취소</Button>
               </div>
             </form>
           </CardContent>
