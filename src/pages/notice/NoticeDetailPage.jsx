@@ -1,14 +1,14 @@
 import React from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Type, Clock } from 'lucide-react';
+import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut } from 'lucide-react';
 import useNoticeDetailLogic from './useNoticeDetailLogic';
 import './NoticeDetailPage.css';
 
 export default function NoticeDetailPage() {
   const {
-    notice, noticeId, isLoading, surroundingPosts, recentPosts, fontSize, originPage,
-    increaseFontSize, decreaseFontSize, displayDate, handleDetailPrint, 
-    handleGoBack, handleCopyLink, navigate
+    notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
+    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate,
+    zoomLevel, zoomIn, zoomOut, zoomControlRef
   } = useNoticeDetailLogic();
 
   if (isLoading) return <LoadingSpinner className="h-64" />;
@@ -39,11 +39,21 @@ export default function NoticeDetailPage() {
                 </div>
                 
                 <div className="nd-utils print-hide">
-                  <div className="nd-font-control">
-                    <button onClick={decreaseFontSize} title="글자 작게"><Type size={14} />-</button>
+                  {/* 🚨 휠 스크롤 줌 컨트롤러 */}
+                  <div 
+                    ref={zoomControlRef}
+                    className="nd-font-control cursor-ns-resize"
+                    title="여기에 마우스를 올리고 휠을 위아래로 굴려보세요!"
+                  >
+                    <button type="button" onClick={zoomOut} title="화면 축소"><ZoomOut size={14} /></button>
                     <div className="nd-divider"></div>
-                    <button onClick={increaseFontSize} className="bold" title="글자 크게"><Type size={16} />+</button>
+                    <button type="button" onClick={zoomIn} title="화면 확대"><ZoomIn size={14} /></button>
+                    <span className="text-xs font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ml-1 w-12 text-center pointer-events-none">
+                      {Math.round(zoomLevel * 100)}%
+                    </span>
                   </div>
+                  
+                  {/* 🚨 복구된 공유 및 인쇄 버튼 */}
                   <button className="nd-util-btn" onClick={handleCopyLink} title="주소 복사">
                     <LinkIcon size={14} /> 공유
                   </button>
@@ -64,7 +74,8 @@ export default function NoticeDetailPage() {
               </div>
             </div>
 
-            <div className="nd-content" style={{ fontSize: `${fontSize}px` }}>
+            {/* 🚨 선(hr) 아래 본문에만 zoom 배율 적용 */}
+            <div className="nd-content transition-all duration-200 transform-origin-top" style={{ zoom: zoomLevel }}>
               {notice.content}
             </div>
           </div>
