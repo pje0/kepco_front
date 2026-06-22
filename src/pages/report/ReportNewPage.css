@@ -1,0 +1,98 @@
+/* PC 환경 최적화 와이드 컨테이너 */
+.report-wide-container {
+  min-width: 900px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+/* 설비 번호 아코디언 래퍼 */
+.facility-accordion-wrapper {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.facility-accordion-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+  outline: none;
+}
+
+.facility-accordion-header:hover {
+  background-color: #f1f5f9;
+}
+
+.facility-accordion-header.open {
+  background-color: #eff6ff;
+  color: #1e3a8a;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.facility-accordion-content {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  animation: slideDown 0.3s ease-out forwards;
+  transform-origin: top;
+}
+
+/* 애니메이션 */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* PC 환경 최적화 와이드 컨테이너 */
+.report-wide-container {
+  min-width: 900px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+/* 🚨 [신규] 인쇄 최적화 (Print Media Query) */
+@media print {
+  /* 인쇄 시 불필요한 요소 숨김 (버튼, 약관, 경고 배너 등) */
+  .print-hide {
+    display: none !important;
+  }
+
+  /* 컨테이너 너비 제한 해제 (A4 용지 꽉 차게) */
+  .report-wide-container {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 인쇄 시 테두리 및 배경색 정리 */
+  .print-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  /* 배경색 강제 적용 허용 (일부 브라우저 옵션) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
