@@ -13,6 +13,9 @@ import { getEmployees, createEmployee, deleteEmployee, updateEmployee } from '@/
 // 🌐 [공공데이터 연동]: contents 폴더에 생성한 행정구역 데이터셋 임포트
 import { REGION_DATA } from '@/contents/regionData'
 
+// 자격증 마스터 옵션 리스트
+const CERTIFICATE_OPTIONS = ['전기기사', '전기공사기사', '전기기능장', '산업안전기사', '소방설비기사']
+
 export default function EmployeePage() {
   const [employees, setEmployees] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -22,6 +25,10 @@ export default function EmployeePage() {
   // 🎯 [수정 모드 제어 상태]
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingId, setEditingId] = useState(null)
+
+  // 📄 [포트폴리오 고도화]: 클라이언트 사이드 페이징 상태
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10 // 한 페이지에 노출할 사원 수
 
   // 🗺️ [공공데이터 연동] 시도 및 시군구 동적 필터링 제어용 로컬 상태
   const [selectedSido, setSelectedSido] = useState('')
@@ -50,12 +57,30 @@ export default function EmployeePage() {
 
   useEffect(() => { loadEmployees() }, [])
 
-  const filtered = employees.filter(
+    // 📄 백엔드 응답이 페이징 객체({ content: [] })일 때와 순수 배열([])일 때를 모두 안전하게 수용합니다.
+  const targetList = Array.isArray(employees) 
+    ? employees 
+    : (employees && Array.isArray(employees.content) ? employees.content : [])
+
+  // 🔍 [포트폴리오 강조]: 가공된 targetList 배열을 기반으로 실시간 필터 가동
+  const filtered = targetList.filter(
     (e) =>
-      (e.name && e.name.includes(search)) ||
-      (e.department && e.department.includes(search)) ||
-      (e.email && e.email.includes(search))
+      (e.name && e.name.toLowerCase().includes(search.toLowerCase())) ||
+      (e.department && e.department.toLowerCase().includes(search.toLowerCase())) ||
+      (e.email && e.email.toLowerCase().includes(search.toLowerCase())) ||
+      (e.empNumber && e.empNumber.toLowerCase().includes(search.toLowerCase()))
   )
+
+  // ⚠️ [버그 프리 안심 장치]: 사용자가 검색어를 바꾸면 페이지 번호를 강제로 1페이지로 싱크 원복
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search])
+
+  // 📊 [클라이언트 페이징 연산]: 실시간 검색 결과 필터 레이어를 먼저 거친 뒤 자르기 수행
+  const totalPages = Math.ceil(filtered.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const pagedItems = filtered.slice(indexOfFirstItem, indexOfLastItem)
 
   const handleChange = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -117,7 +142,6 @@ export default function EmployeePage() {
       role: 'WORKER', empNumber: '', department: '', assignedDistrict: '', certificate: '', grade: 'JUNIOR'
     })
   }
-
   // 🎯 [등록 및 수정 통합 제출 핸들러]
   const handleFormSubmit = async (e) => {
     e.preventDefault()
@@ -305,13 +329,13 @@ export default function EmployeePage() {
                     </select>
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>보유 자격증 목록 (쉼표 구분)</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 rounded-md border border-input bg-background/50">
-                      {['전기기사', '전기산업기사', '전기공사기사', '전기공사산업기사', '전기기능장', '전기안전기술사', '발송배전기술사', '정보처리기사', '소방설비기사(전기)', '산업안전기사'].map((cert) => {
-                        const currentCerts = form.certificate ? form.certificate.split(',').map(c => c.trim()).filter(Boolean) : [];
+                    <Label>보유 기술 자격증 (중복 선택 가능)</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                      {CERTIFICATE_OPTIONS.map((cert) => {
+                        const currentCerts = form.certificate ? form.certificate.split(', ').filter(Boolean) : [];
                         const isChecked = currentCerts.includes(cert);
                         return (
-                          <label key={cert} className={`flex items-center gap-2 text-sm p-2 rounded-md border cursor-pointer transition-all ${isChecked ? 'bg-primary/5 border-primary text-primary font-medium' : 'hover:bg-muted/50 border-transparent text-muted-foreground'}`}>
+                          <label key={cert} className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                             <input
                               type="checkbox"
                               className="rounded border-input text-primary focus:ring-primary h-4 w-4"
@@ -335,7 +359,6 @@ export default function EmployeePage() {
                   </div>
                 </div>
               </div>
-
               {formError && (
                 <p className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">{formError}</p>
               )}
@@ -375,14 +398,14 @@ export default function EmployeePage() {
               </TableRow>
             </TableHeader>
              <TableBody>
-              {filtered.length === 0 ? (
+              {pagedItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     검색 결과가 없습니다.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((emp) => (
+                pagedItems.map((emp) => (
                   <TableRow key={emp.id} className="hover:bg-muted/40 transition-colors">
                     {/* 🎯 사원 이름 열의 기존 마우스 클릭 핸들러 제거 후 순수 텍스트로 복원 */}
                     <TableCell className="font-semibold text-foreground">
@@ -393,7 +416,6 @@ export default function EmployeePage() {
                     <TableCell>{emp.phone || '-'}</TableCell>
                     <TableCell>{emp.email}</TableCell>
                     <TableCell>{emp.hiredAt || '-'}</TableCell>
-                    {/* 관리 액션 버튼 영역: 오른쪽 정렬(justify-end)을 중앙 정렬(justify-center)로 완벽 교정 */}
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Button
@@ -422,6 +444,49 @@ export default function EmployeePage() {
             </TableBody>
           </Table>
         </Card>
+      )}
+
+      {/* 📄 하단 클라이언트 사이드 페이지네이션 내비게이션 조작 바 */}
+      {filtered.length > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-muted-foreground">
+            총 <span className="font-semibold text-foreground">{filtered.length}</span>명 중{' '}
+            <span className="font-semibold text-foreground">{indexOfFirstItem + 1}</span>-{Math.min(indexOfLastItem, filtered.length)}명 표시
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              이전
+            </Button>
+            
+            <div className="flex items-center gap-1 mx-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 w-8 p-0 text-xs"
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              다음
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )
