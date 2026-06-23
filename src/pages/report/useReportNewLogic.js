@@ -150,6 +150,25 @@ export default function useReportNewLogic() {
   const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 2.0));
   const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
 
+  // 🚨 [신규] Ctrl+S 저장 방지 로직 (프로젝트 전체 전역 적용)
+  useEffect(() => {
+    const preventSave = (e) => {
+      // Mac의 Cmd(metaKey)와 Windows의 Ctrl(ctrlKey) + S 조합 감지
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault(); // 브라우저의 기본 '저장창 띄우기'를 강제로 취소(차단)합니다.
+        
+        // 화면엔 보이지 않는 의미 없는 행동
+        console.log("보안 정책에 의해 페이지 저장이 차단되었습니다."); 
+      }
+    };
+
+    // 키보드 이벤트 리스너 부착
+    window.addEventListener('keydown', preventSave);
+    
+    // 컴포넌트 언마운트 시 클린업
+    return () => window.removeEventListener('keydown', preventSave);
+  }, []);
+
   return {
     formData, isLoading, success, isAgreed, setIsAgreed, zoomLevel,
     handleChange, handleAddressSearch, handleSubmit, resetForm, handlePrint, navigate,

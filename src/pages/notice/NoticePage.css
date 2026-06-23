@@ -2,7 +2,7 @@
 .notice-container {
   width: 100%;
   max-width: 1200px;
-  min-width: 900px; /* 화면(뷰포트) 전체 가로 넓이의 50% 이하로 줄어들지 않도록 고정 */
+  min-width: 800px; /* 화면(뷰포트) 전체 가로 넓이의 50% 이하로 줄어들지 않도록 고정 */
   margin: 0 auto;
   font-family: 'Pretendard', sans-serif;
   color: #334155;
@@ -346,4 +346,9 @@
   background-color: #3b82f6;
   border-color: #3b82f6;
   color: #ffffff;
+}
+
+/* 최상단 '공지사항' 타이틀 및 진한 글씨들 하얗게 반전 */
+.dark .notice-title {
+  color: #f8fafc !important;
 }

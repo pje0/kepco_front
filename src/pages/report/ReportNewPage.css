@@ -1,6 +1,6 @@
 /* PC 환경 최적화 와이드 컨테이너 */
 .report-wide-container {
-  min-width: 900px;
+  min-width: 800px;
   max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 3rem;
@@ -61,14 +61,6 @@
   }
 }
 
-/* PC 환경 최적화 와이드 컨테이너 */
-.report-wide-container {
-  min-width: 900px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 3rem;
-}
-
 /* 🚨 [신규] 인쇄 최적화 (Print Media Query) */
 @media print {
   /* 인쇄 시 불필요한 요소 숨김 (버튼, 약관, 경고 배너 등) */
@@ -96,3 +88,74 @@
     print-color-adjust: exact !important;
   }
 }
+
+/* ========================================================
+   🌙 다크 모드 강제 적용 (ReportNewPage 전용)
+======================================================== */
+/* 1. 타이틀 영역 */
+.dark .text-slate-900 { color: #f8fafc !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+
+/* 2. 휠 줌 컨트롤러 & 인쇄 버튼 */
+.dark .bg-white.border-slate-300 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+.dark .bg-white.border-slate-300 button { color: #cbd5e1 !important; }
+.dark .bg-white.border-slate-300 button:hover { background-color: #334155 !important; color: #ffffff !important; }
+.dark .bg-slate-200 { background-color: #334155 !important; } /* 세로 구분선 */
+.dark .bg-blue-50.text-blue-700 { background-color: rgba(30, 58, 138, 0.4) !important; color: #93c5fd !important; }
+
+.dark .nd-back-btn {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+.dark .nd-back-btn:hover { background-color: #334155 !important; }
+
+/* 3. 안전 수칙 경고 배너 */
+.dark .bg-red-50 { background-color: rgba(127, 29, 29, 0.2) !important; border-color: #991b1b !important; }
+.dark .text-red-800 { color: #fca5a5 !important; }
+.dark .text-red-700 { color: #f87171 !important; }
+
+/* 4. 메인 카드 & 헤더 */
+.dark .main-card {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+.dark .bg-slate-50.border-b {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+  border-color: #1e293b !important;
+}
+.dark .text-slate-800 { color: #f8fafc !important; }
+.dark .text-slate-700 { color: #e2e8f0 !important; } /* 라벨 텍스트 */
+
+/* 5. 입력 폼 (Input, Textarea, 주소 버튼) */
+.dark input.bg-white,
+.dark textarea.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark input.bg-slate-50 {
+  background-color: #0f172a !important; /* 주소 읽기전용 칸 */
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+.dark button.border-slate-300.hover\:bg-slate-50 {
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+.dark button.border-slate-300.hover\:bg-slate-50:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+/* 6. 약관 동의 스크롤 박스 및 텍스트 */
+.dark .border-t.border-slate-200 { border-color: #1e293b !important; }
+.dark .mt-12 .bg-slate-50 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+.dark .text-slate-600 { color: #94a3b8 !important; }
