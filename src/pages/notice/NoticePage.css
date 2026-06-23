@@ -227,6 +227,42 @@
   .notice-table td { color: #000 !important; border-bottom: 1px solid #ccc !important; }
 }
 
+/* 🚨 관리자 전용 글쓰기 플로팅 버튼 (화면 우측 하단 고정) */
+.notice-write-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #1e3a8a;
+  color: #ffffff;
+  padding: 0.5rem 0.85rem; /* 🚨 기존보다 거의 절반으로 축소 */
+  border-radius: 9999px;
+  font-size: 0.75rem; /* 🚨 폰트 크기도 아담하게 축소 */
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+}
+
+.notice-write-fab:hover {
+  background-color: #1e40af;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.4);
+}
+
+.dark .notice-write-fab {
+  background-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.dark .notice-write-fab:hover {
+  background-color: #2563eb;
+}
+
 /* ========================================================
    🌙 다크 모드 (Dark Mode) 완벽 지원 스타일 
 ======================================================== */

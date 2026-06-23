@@ -1,13 +1,18 @@
 import React from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut } from 'lucide-react';
+import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext'; // 🚨 관리자 권한 확인용
+import { toast } from 'sonner';
+import { deleteNotice } from '@/api/noticeApi';
 import useNoticeDetailLogic from './useNoticeDetailLogic';
 import './NoticeDetailPage.css';
-
 export default function NoticeDetailPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  
   const {
     notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
-    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate,
+    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate, // 🚨 hook에서 주는 것만 사용!
     zoomLevel, zoomIn, zoomOut, zoomControlRef
   } = useNoticeDetailLogic();
 
@@ -60,6 +65,26 @@ export default function NoticeDetailPage() {
                   <button className="nd-util-btn" onClick={handleDetailPrint}>
                     <Printer size={14} /> 인쇄
                   </button>
+
+                  {/* 🚨 관리자 전용: 수정 및 삭제 버튼 */}
+                  {isAdmin && (
+                    <>
+                      <div className="nd-divider"></div>
+                      <button className="nd-util-btn edit" onClick={() => navigate(`/notice/edit/${noticeId}`)}>
+                        <Edit size={14} /> 수정
+                      </button>
+                      <button className="nd-util-btn delete" onClick={() => {
+                        if (window.confirm('정말 이 공지사항을 삭제하시겠습니까?')) {
+                          deleteNotice(noticeId).then(() => {
+                            toast.success('공지사항이 완벽하게 삭제되었습니다.', { position: 'bottom-right' });
+                            navigate('/notice');
+                          }).catch(() => toast.error('삭제에 실패했습니다.'));
+                        }
+                      }}>
+                        <Trash2 size={14} /> 삭제
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               

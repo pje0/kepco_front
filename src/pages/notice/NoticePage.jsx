@@ -1,12 +1,17 @@
 import React from 'react';
-import { Bell, Search, Printer, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Search, Printer, Eye, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react'; // 🚨 Edit3 추가
+import { useAuth } from '@/context/AuthContext'; // 로그인 유저 확인용
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom'; // 🚨 추가: 페이지 이동 함수
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeLogic from './useNoticeLogic';
 import './NoticePage.css';
 
 export default function NoticePage() {
+  const { user } = useAuth(); 
+  const isAdmin = user?.role === 'ROLE_ADMIN'; 
+  const navigate = useNavigate(); // 🚨 추가: 플로팅 버튼용
   const {
     notices, isLoading,
     startDate, endDate, rangeType, searchCondition, searchKeyword, searchDept,
@@ -207,7 +212,7 @@ export default function NoticePage() {
             {modalData ? highlightText(modalData.content, appliedFilters.keyword) : <LoadingSpinner className="h-24" />}
           </div>
 
-          {/* 🚨 추가됨: 하단 심플 화살표 네비게이션 */}
+          {/* 🚨 추가됨: 하단 심플 화살표 네비게이션 및 상세보기 버튼 */}
           <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 print-hide">
             <button
               onClick={() => handleModalNav(-1)}
@@ -216,6 +221,17 @@ export default function NoticePage() {
               title="이전 글"
             >
               <ChevronLeft size={36} strokeWidth={1.5} />
+            </button>
+
+            {/* 🚨 [신규] 상세 페이지 이동 버튼 추가 */}
+            <button
+              onClick={() => {
+                setIsModalOpen(false); // 모달 닫기
+                if (modalData?.id) handleTitleClick(modalData.id); // 상세 페이지로 이동
+              }}
+              className="px-5 py-2 text-sm font-semibold text-white bg-[#1e3a8a] rounded hover:bg-blue-800 transition-colors"
+            >
+              상세보기
             </button>
 
             <button
@@ -229,6 +245,16 @@ export default function NoticePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* =관리자 전용 플로팅 글쓰기 버튼 */}
+      {isAdmin && (
+        <button 
+          className="notice-write-fab print-hide"
+          onClick={() => navigate('/notice/new')}
+        >
+          <Edit3 size={14} /> 새 공지사항
+        </button>
+      )}
     </div>
   );
 }

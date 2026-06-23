@@ -25,3 +25,18 @@ export async function getNotice(id) {
     throw error;
   }
 }
+
+export async function createNotice(data) {
+  const response = await axiosInstance.post('/notices', data);
+  return response.data;
+}
+
+export async function updateNotice(id, data) {
+  const response = await axiosInstance.put(`/notices/${id}`, data);
+  return response.data;
+}
+
+export async function deleteNotice(id) {
+  const response = await axiosInstance.delete(`/notices/${id}`);
+  return response.data;
+}
