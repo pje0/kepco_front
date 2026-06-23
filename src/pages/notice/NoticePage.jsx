@@ -84,6 +84,7 @@ export default function NoticePage() {
               <option value="인사관리팀">인사관리팀</option>
               <option value="시스템운영팀">시스템운영팀</option>
               <option value="안전관리본부">안전관리본부</option>
+              <option value="복구팀">복구팀</option>
             </select>
             <button className="search-submit-btn" onClick={handleSearch}>
               <Search size={16} /> 조회
@@ -209,7 +210,14 @@ export default function NoticePage() {
           </DialogHeader>
 
           <div className="min-h-[150px] max-h-[400px] overflow-y-auto py-4 text-slate-700 whitespace-pre-wrap leading-loose">
-            {modalData ? highlightText(modalData.content, appliedFilters.keyword) : <LoadingSpinner className="h-24" />}
+            {modalData ? (
+              <div 
+                className="ql-editor p-0" 
+                dangerouslySetInnerHTML={{ __html: modalData.content }} 
+              />
+            ) : (
+              <LoadingSpinner className="h-24" />
+            )}
           </div>
 
           {/* 🚨 추가됨: 하단 심플 화살표 네비게이션 및 상세보기 버튼 */}

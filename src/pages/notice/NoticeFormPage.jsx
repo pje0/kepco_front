@@ -71,6 +71,17 @@ export default function NoticeFormPage() {
             </div>
           </div>
 
+          <div className="nf-input-group">
+            <label className="nf-label">예약 발행 설정</label>
+            <input 
+              type="datetime-local" 
+              className="nf-input"
+              style={{ width: '250px' }}
+              value={formData.publishAt}
+              onChange={(e) => handleChange('publishAt', e.target.value)}
+            />
+          </div>
+
           {/* 제목 */}
           <div className="nf-input-group">
             <label className="nf-label">제목 <span className="nf-required">*</span></label>
