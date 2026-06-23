@@ -66,9 +66,11 @@ export default function AppRouter() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/notice" element={<NoticePage />} />
           
-          {/* 💡 Sidebar.jsx의 메뉴 주소인 /resources 와 철자를 완벽하게 일치시켰습니다. */}
-          <Route path="/resources" element={<ResourcePage />} />
-          <Route path="/resources/upload" element={<UploadResourcePage />} />
+        {/* 🔵 [자료실] - 시민 제외, 직원 전용 (ROLE_ADMIN 항상 통과) */}
+            <Route element={<ProtectedRoute allowedRoles={['ROLE_HR', 'ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_WORKER', 'ROLE_ADMIN']} />}>
+            <Route path="/resources" element={<ResourcePage />} />
+            <Route path="/resources/upload" element={<UploadResourcePage />} />
+            </Route>
           
           {/* 민원 신고 접수 및 내역 확인 */}
           <Route path="/report/new" element={<ReportNewPage />} />
