@@ -59,3 +59,10 @@ export const getRecentNoticesForSelect = async () => {
   // 🚨 페이징 객체일 경우(content)와 일반 배열일 경우를 모두 커버하는 안전한 반환 로직
   return response.data.content || response.data.data || response.data;
 };
+
+export const createNoticeTemplate = async (payload) => {
+  console.log("[noticeApi] createNoticeTemplate 호출됨 - 전달된 데이터 객체:", payload);
+  const response = await axios.post('/api/notices/templates', payload);
+  console.log("[noticeApi] createNoticeTemplate 서버 응답 데이터 수신 완료:", response.data);
+  return response.data;
+};

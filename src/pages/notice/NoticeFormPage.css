@@ -1,235 +1,81 @@
-/* ========================================================
-   Notice Form Page Styles (Light & Dark Mode)
-======================================================== */
-.nf-wrapper {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
-  font-family: 'Pretendard', sans-serif;
-}
+/* src/pages/notice/NoticeFormPage.css (v1.2) */
 
-.nf-header {
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #1e3a8a;
-  padding-bottom: 1rem;
-}
-
-.nf-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 0.5rem 0;
-}
-
-.nf-subtitle {
-  font-size: 0.9rem;
-  color: #64748b;
-  margin: 0;
-}
-
-.nf-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.nf-form {
+/* --- ReactQuill 에디터 커스텀 스타일링 --- */
+.quill-custom-wrapper .quill {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
-.nf-row-group {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+/* [라이트 모드] 툴바 배경 및 테두리 */
+.quill-custom-wrapper .ql-toolbar {
+  border: 1px solid #cbd5e1 !important; 
+  background-color: #f8fafc !important; 
+  border-top-left-radius: 0.375rem !important; 
+  border-top-right-radius: 0.375rem !important;
+  padding: 10px 16px !important;
+  font-family: inherit !important;
 }
 
-.nf-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
+/* [라이트 모드] 에디터 본문 컨테이너 */
+.quill-custom-wrapper .ql-container {
+  border: 1px solid #cbd5e1 !important; 
+  border-top: none !important; 
+  border-bottom-left-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+  font-size: 15px !important;
+  font-family: inherit !important;
+  min-height: 450px; 
+  background-color: #ffffff !important;
 }
 
-.nf-label {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #334155;
+/* 실제 텍스트 입력 영역 규격 공통 설정 */
+.quill-custom-wrapper .ql-editor {
+  min-height: 450px;
+  line-height: 1.7;
+  padding: 24px 28px !important;
+  color: #1e293b !important; 
 }
 
-.nf-required {
-  color: #ef4444;
+/* [라이트 모드] 플레이스홀더 텍스트 */
+.quill-custom-wrapper .ql-editor.ql-blank::before {
+  color: #94a3b8 !important; 
+  font-style: normal !important;
 }
 
-.nf-input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  outline: none;
-  color: #0f172a;
-  background-color: #ffffff;
-  transition: border-color 0.2s;
+
+/* =========================================
+   🌙 다크 테마 (Dark Mode) 강제 오버라이딩 적용
+   ========================================= */
+
+/* 다크모드 툴바 배경색 및 테두리 */
+.dark .quill-custom-wrapper .ql-toolbar {
+  border-color: #475569 !important; /* Tailwind slate-600 */
+  background-color: #1e293b !important; /* Tailwind slate-800 */
 }
 
-.nf-input:focus, .nf-textarea:focus {
-  border-color: #2563eb;
+/* 다크모드 툴바 아이콘 컬러 반전 (Stroke & Fill 방식 대응) */
+.dark .quill-custom-wrapper .ql-toolbar .ql-stroke {
+  stroke: #cbd5e1 !important; /* Tailwind slate-300 */
+}
+.dark .quill-custom-wrapper .ql-toolbar .ql-fill {
+  fill: #cbd5e1 !important;
+}
+.dark .quill-custom-wrapper .ql-toolbar .ql-picker {
+  color: #cbd5e1 !important;
 }
 
-.nf-select {
-  width: 200px;
-  cursor: pointer;
+/* 다크모드 에디터 본문 컨테이너 배경 및 테두리 */
+.dark .quill-custom-wrapper .ql-container {
+  border-color: #475569 !important;
+  background-color: #0f172a !important; /* Tailwind slate-900 */
 }
 
-.nf-checkbox-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 4px;
-  cursor: pointer;
+/* 다크모드 본문 텍스트 색상 (흰색에 가깝게) */
+.dark .quill-custom-wrapper .ql-editor {
+  color: #f8fafc !important; /* Tailwind slate-50 */
 }
 
-.nf-checkbox {
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
+/* 다크모드 플레이스홀더 텍스트 색상 */
+.dark .quill-custom-wrapper .ql-editor.ql-blank::before {
+  color: #64748b !important; /* Tailwind slate-500 */
 }
-
-.nf-check-label {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #b91c1c;
-  cursor: pointer;
-  user-select: none;
-}
-
-.nf-check-icon {
-  color: #ef4444;
-}
-
-.nf-textarea {
-  padding: 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  outline: none;
-  color: #0f172a;
-  background-color: #ffffff;
-  resize: vertical;
-  line-height: 1.6;
-  font-family: inherit;
-  transition: border-color 0.2s;
-}
-
-.nf-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.nf-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.75rem 2rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.nf-btn-cancel {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-}
-
-.nf-btn-cancel:hover {
-  background-color: #e2e8f0;
-}
-
-.nf-btn-submit {
-  background-color: #1e3a8a;
-  color: #ffffff;
-}
-
-.nf-btn-submit:hover:not(:disabled) {
-  background-color: #1e40af;
-}
-
-.nf-btn-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 🚨 신규: ReactQuill 에디터 크기 제어 */
-.nf-quill-editor {
-  background-color: #ffffff;
-}
-.nf-quill-editor .ql-container {
-  min-height: 350px;
-  font-family: inherit;
-  font-size: 0.95rem;
-  border-color: #cbd5e1;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-.nf-quill-editor .ql-toolbar {
-  border-color: #cbd5e1;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-}
-.dark .nf-quill-editor .ql-toolbar, 
-.dark .nf-quill-editor .ql-container {
-  border-color: #334155;
-  background-color: #1e293b;
-  color: #f8fafc;
-}
-.dark .ql-stroke { stroke: #cbd5e1; }
-.dark .ql-fill { fill: #cbd5e1; }
-.dark .ql-picker { color: #cbd5e1; }
-
-/* ========================================================
-   🌙 다크 모드 (Dark Mode)
-======================================================== */
-.dark .nf-title { color: #f8fafc; }
-.dark .nf-header { border-bottom-color: #334155; }
-.dark .nf-card { background-color: #0f172a; border-color: #1e293b; }
-.dark .nf-label { color: #cbd5e1; }
-
-.dark .nf-input, .dark .nf-textarea {
-  background-color: #1e293b;
-  border-color: #334155;
-  color: #f8fafc;
-}
-.dark .nf-input:focus, .dark .nf-textarea:focus { border-color: #3b82f6; }
-
-.dark .nf-checkbox-group {
-  background-color: rgba(220, 38, 38, 0.1);
-  border-color: #7f1d1d;
-}
-.dark .nf-check-label { color: #fca5a5; }
-
-.dark .nf-footer { border-top-color: #1e293b; }
-.dark .nf-btn-cancel {
-  background-color: #1e293b;
-  border-color: #334155;
-  color: #cbd5e1;
-}
-.dark .nf-btn-cancel:hover { background-color: #334155; }
