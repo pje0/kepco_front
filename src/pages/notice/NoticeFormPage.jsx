@@ -1,19 +1,19 @@
-// src/pages/notice/NoticeFormPage.jsx (v1.2)
 import React, { useMemo } from 'react';
 import { Save, X, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeFormLogic from './useNoticeFormLogic';
 import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css'; // 🚨 필수: 에디터 기본 CSS
+import 'react-quill-new/dist/quill.snow.css'; // 에디터 기본 CSS
 import './NoticeFormPage.css';
 
 export default function NoticeFormPage() {
   const {
     isEditMode, formData, isLoading,
-    handleChange, handleSubmit, handleCancel
+    templates, recentNotices,
+    handleChange, handleSubmit, handleCancel,
+    handleApplyTemplate, handleApplyPreviousNotice
   } = useNoticeFormLogic();
 
-  // 🚨 에디터 툴바 기능 설정 (볼드, 색상, 정렬 등)
   const modules = useMemo(() => ({
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
@@ -80,6 +80,57 @@ export default function NoticeFormPage() {
               value={formData.publishAt}
               onChange={(e) => handleChange('publishAt', e.target.value)}
             />
+          </div>
+
+          {/* 고정 템플릿 및 과거 글 불러오기 드롭다운 영역 */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-slate-50 border border-slate-200 rounded-md">
+            <div className="flex-1">
+              <label htmlFor="template-select" className="block text-sm font-semibold text-slate-700 mb-2">
+                고정 템플릿 불러오기
+              </label>
+              <select 
+                id="template-select"
+                className="w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => {
+                  // [콘솔 로그] 고정 템플릿 선택 이벤트 감지 및 처리
+                  console.log("[NoticeFormPage] 고정 템플릿 선택 이벤트 발생 - 선택된 value:", e.target.value);
+                  handleApplyTemplate(e.target.value);
+                  // 🚨 연속 선택이 가능하도록 처리 직후 초기값으로 되돌림
+                  e.target.value = ""; 
+                }}
+              >
+                <option value="">-- 고정 양식 선택 --</option>
+                {templates && templates.map(template => (
+                  <option key={`tpl-${template.id}`} value={template.id}>
+                    {template.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex-1">
+              <label htmlFor="recent-notice-select" className="block text-sm font-semibold text-slate-700 mb-2">
+                과거 공지글 복사하기
+              </label>
+              <select 
+                id="recent-notice-select"
+                className="w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => {
+                  // [콘솔 로그] 과거 글 복사 선택 이벤트 감지 및 처리
+                  console.log("[NoticeFormPage] 과거 공지글 복사 선택 이벤트 발생 - 선택된 value:", e.target.value);
+                  handleApplyPreviousNotice(e.target.value);
+                  // 🚨 연속 선택이 가능하도록 처리 직후 초기값으로 되돌림
+                  e.target.value = ""; 
+                }}
+              >
+                <option value="">-- 과거 글 선택 --</option>
+                {recentNotices && recentNotices.map(notice => (
+                  <option key={`prev-${notice.id}`} value={notice.id}>
+                    {notice.title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* 제목 */}
