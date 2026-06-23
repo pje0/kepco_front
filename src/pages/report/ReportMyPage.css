@@ -198,6 +198,32 @@
   flex-direction: column;
 }
 
+/* 리스트 컬럼 헤더 스타일 */
+.rm-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #cbd5e1;
+}
+.rm-list-header .rm-item-info span,
+.rm-list-header .rm-item-info div {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+}
+.rm-list-header .rm-item-no {
+  background-color: transparent; 
+}
+.rm-list-header .rm-item-title {
+  text-align: center; 
+}
+.rm-list-header .rm-item-status,
+.rm-list-header .rm-item-date {
+  text-align: center;
+}
+
 .rm-empty {
   padding: 5rem 0;
   text-align: center;
@@ -255,9 +281,13 @@
   flex-shrink: 0;
 }
 
+/* 🚨 수정: 처리상태 배지를 정중앙으로 예쁘게 띄우기 위한 flex 추가 */
 .rm-item-status {
   width: 6rem;
   flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .rm-item-title {
@@ -424,6 +454,14 @@
 .dark .rm-result-count strong { color: #60a5fa; }
 
 .dark .rm-list-wrapper { border-top-color: #334155; }
+
+/* 다크모드 헤더 스타일 */
+.dark .rm-list-header { background-color: rgba(30, 41, 59, 0.5); border-bottom-color: #1e293b; }
+.dark .rm-list-header .rm-item-no,
+.dark .rm-list-header .rm-item-status,
+.dark .rm-list-header .rm-item-title,
+.dark .rm-list-header .rm-item-date { color: #94a3b8; }
+
 .dark .rm-empty { background-color: #0f172a; border-bottom-color: #1e293b; color: #64748b; }
 
 .dark .rm-list-item { background-color: #0f172a; border-bottom-color: #1e293b; }
