@@ -18,6 +18,7 @@ import EmployeePage from '@/pages/employee/EmployeePage'
 import NoticePage from '@/pages/notice/NoticePage'
 import WorkPage from '@/pages/work/WorkPage'
 import ResourcePage from '@/pages/resource/ResourcePage'
+import UploadResourcePage from '@/pages/resource/UploadResourcePage'
 
 // 📁 3. 신고 처리 영역 (report)
 import ReportNewPage from '@/pages/report/ReportNewPage'
@@ -64,8 +65,10 @@ export default function AppRouter() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/notice" element={<NoticePage />} />
+          
           {/* 💡 Sidebar.jsx의 메뉴 주소인 /resources 와 철자를 완벽하게 일치시켰습니다. */}
           <Route path="/resources" element={<ResourcePage />} />
+          <Route path="/resources/upload" element={<UploadResourcePage />} />
           
           {/* 민원 신고 접수 및 내역 확인 */}
           <Route path="/report/new" element={<ReportNewPage />} />
