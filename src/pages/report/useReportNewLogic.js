@@ -12,7 +12,7 @@ export default function useReportNewLogic() {
   const [isAgreed, setIsAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: '', address: '', roadAddress: '', district: '', content: '',
+    title: '', address: '', detailAddress: '', roadAddress: '', district: '', content: '',
   });
 
   const isInitialMount = useRef(true);
@@ -88,6 +88,7 @@ export default function useReportNewLogic() {
         setFormData((prev) => ({
           ...prev,
           address: roadAddr || jibunAddr,
+          detailAddress: '',
           roadAddress: roadAddr,
           district: district,
         }));
@@ -119,13 +120,17 @@ export default function useReportNewLogic() {
     try {
       const districtMatch = formData.district || (formData.address.split(' ').length > 1 ? formData.address.split(' ')[1] : '기타구');
 
+      const fullAddress = formData.detailAddress.trim() 
+        ? `${formData.address} ${formData.detailAddress}` 
+        : formData.address;
+
       await createReport({
         citizenId: Number(user.id),
         citizenName: user.name,
         title: formData.title,
         category: 'AI 분석 대기',
         content: formData.content,
-        address: formData.address,
+        address: fullAddress,
         district: districtMatch,
         severity: 'normal'
       });
@@ -142,7 +147,7 @@ export default function useReportNewLogic() {
   const resetForm = () => {
     setSuccess(false);
     setIsAgreed(false);
-    setFormData({ title: '', address: '', roadAddress: '', district: '', content: '' });
+    setFormData({ title: '', address: '', detailAddress: '', roadAddress: '', district: '', content: '' });
   };
 
   const handlePrint = () => window.print();
