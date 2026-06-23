@@ -1,26 +1,26 @@
+// src/pages/notice/NoticeFormPage.jsx
 import React, { useMemo, useRef, useState } from 'react';
 import { Save, X, AlertCircle, FilePlus, Trash2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeFormLogic from './useNoticeFormLogic';
-import AutoTextModal from './components/AutoTextModal'; // 🚨 분리한 모달 컴포넌트 호출
+import AutoTextModal from './components/AutoTextModal';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './NoticeFormPage.css';
 
-// 💡 DB에서 가져온 사전을 실시간 참조하여 변환하는 코어 로직
 const attemptAutoCorrect = (quill, range, dictRef) => {
-  if (!quill || !range || range.length > 0) return false; 
-  
+  if (!quill || !range || range.length > 0) return false;
+
   const cursorIndex = range.index;
   const lengthToFetch = Math.min(cursorIndex, 30);
   const textBefore = quill.getText(cursorIndex - lengthToFetch, lengthToFetch);
-  const match = textBefore.match(/(\S+)$/); 
-  
+  const match = textBefore.match(/(\S+)$/);
+
   if (match) {
     const typedWord = match[1];
-    const currentDict = dictRef.current; // 🚨 하드코딩 대신 DB 데이터 꺼내기
-    
+    const currentDict = dictRef.current;
+
     if (currentDict && currentDict[typedWord]) {
       const replacement = currentDict[typedWord];
       const startIdx = cursorIndex - typedWord.length;
@@ -28,18 +28,26 @@ const attemptAutoCorrect = (quill, range, dictRef) => {
       quill.deleteText(startIdx, typedWord.length, 'user');
       quill.insertText(startIdx, replacement, 'user');
       quill.setSelection(startIdx + replacement.length, 0, 'user');
-      return true; 
+      return true;
     }
   }
-  return false; 
+  return false;
 };
 
 export default function NoticeFormPage() {
+  const logic = useNoticeFormLogic();
+
+  // 🚨 안전장치: 로직 객체나 formData가 유실되었을 경우 하얀 화면 대신 로딩 스피너로 방어
+  if (!logic || !logic.formData) {
+    return <LoadingSpinner className="nf-spinner-wrap" />;
+  }
+
   const {
     isEditMode, formData, isLoading, templates, recentNotices,
-    autoTextList, isMacroModalOpen, setIsMacroModalOpen, autoTextDictRef, handleAddAutoText, handleDeleteAutoText, // 🚨 DB 연동 상태
-    handleChange, handleSubmit, handleCancel, handleApplyTemplate, handleApplyPreviousNotice, handleSaveAsTemplate, handleDeleteTemplate
-  } = useNoticeFormLogic();
+    autoTextList, isMacroModalOpen, setIsMacroModalOpen, autoTextDictRef, handleAddAutoText, handleDeleteAutoText,
+    handleChange, handleSubmit, handleSaveDraft, handleCancel,
+    handleApplyTemplate, handleApplyPreviousNotice, handleSaveAsTemplate, handleDeleteTemplate
+  } = logic;
 
   const quillRef = useRef(null);
   const [isAutoTextOn, setIsAutoTextOn] = useState(true);
@@ -64,24 +72,22 @@ export default function NoticeFormPage() {
       keyboard: {
         bindings: {
           spaceAutoCorrectCode: {
-            key: 32, 
+            key: 32,
             handler: function(range) {
-              if (!autoTextEnabledRef.current) return true; 
-              // 🚨 에디터 입력 시 DB 사전이 담긴 Ref를 파라미터로 넘김
+              if (!autoTextEnabledRef.current) return true;
               const replaced = attemptAutoCorrect(this.quill, range, autoTextDictRef);
-              return !replaced; 
+              return !replaced;
             }
           }
         }
       }
     };
-  }, []); 
+  }, []);
 
   if (isLoading) return <LoadingSpinner className="nf-spinner-wrap" />;
 
   return (
     <div className="nf-container">
-      
       <div className="nf-header">
         <h1 className="nf-title">공지사항 {isEditMode ? '수정' : '작성'}</h1>
         <p className="nf-subtitle">시스템 공지 및 주요 안내 사항을 {isEditMode ? '수정' : '등록'}합니다.</p>
@@ -91,7 +97,6 @@ export default function NoticeFormPage() {
         <form onSubmit={handleSubmit} className="nf-form">
           <div className="nf-options-panel">
             <div className="nf-grid">
-              
               <div className="nf-grid-item">
                 <label className="nf-label">담당 부서</label>
                 <select className="nf-input" value={formData.department} onChange={(e) => handleChange('department', e.target.value)}>
@@ -120,13 +125,13 @@ export default function NoticeFormPage() {
                       const selectedVal = document.getElementById("page-template-selector").value;
                       if (!selectedVal) return toast.error("적용할 템플릿을 지정하세요.");
                       handleApplyTemplate(selectedVal);
-                      document.getElementById("page-template-selector").value = ""; 
+                      document.getElementById("page-template-selector").value = "";
                     }}>적용</button>
                   <button type="button" className="nf-btn-delete" onClick={() => {
                       const selectedVal = document.getElementById("page-template-selector").value;
                       if (!selectedVal) return toast.error("삭제할 템플릿을 지정하세요.");
                       handleDeleteTemplate(selectedVal);
-                      document.getElementById("page-template-selector").value = ""; 
+                      document.getElementById("page-template-selector").value = "";
                     }}><Trash2 size={15} /></button>
                 </div>
               </div>
@@ -135,7 +140,7 @@ export default function NoticeFormPage() {
                 <label className="nf-label highlight">과거 공지글 복사하기</label>
                 <select className="nf-input highlight-input" onChange={(e) => {
                     handleApplyPreviousNotice(e.target.value);
-                    e.target.value = ""; 
+                    e.target.value = "";
                   }}>
                   <option value="">-- 과거 글 선택 --</option>
                   {recentNotices && recentNotices.map(notice => (
@@ -143,7 +148,6 @@ export default function NoticeFormPage() {
                   ))}
                 </select>
               </div>
-
             </div>
 
             <div className="nf-pinned-section">
@@ -157,7 +161,22 @@ export default function NoticeFormPage() {
 
           <div className="nf-input-section">
             <label className="nf-main-label">제목 <span className="nf-required">*</span></label>
-            <input type="text" className="nf-title-input" placeholder="공지사항 제목을 입력하세요." value={formData.title} onChange={(e) => handleChange('title', e.target.value)} />
+            <input
+              type="text"
+              className="nf-title-input"
+              placeholder="공지사항 제목을 입력하세요."
+              value={formData.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              onKeyDown={(e) => {
+                // 🚨 제목에서 Tab 키를 누르면 툴바를 건너뛰고 에디터 본문으로 직행
+                if (e.key === 'Tab' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (quillRef.current) {
+                    quillRef.current.getEditor().focus();
+                  }
+                }
+              }}
+            />
           </div>
 
           <div className="nf-editor-section">
@@ -171,9 +190,11 @@ export default function NoticeFormPage() {
 
           <div className="nf-footer">
             <button type="button" className="nf-btn-cancel" onClick={handleCancel}><X size={16} /> 취소</button>
+            <button type="button" className="nf-btn-draft" onClick={handleSaveDraft} disabled={isLoading}>
+              <Save size={16} /> 임시 저장
+            </button>
             <button type="submit" className="nf-btn-submit" disabled={isLoading}><Save size={16} /> {isEditMode ? '수정 완료' : '등록하기'}</button>
           </div>
-
         </form>
       </div>
 
@@ -183,8 +204,7 @@ export default function NoticeFormPage() {
             type="button"
             onClick={toggleAutoText}
             onContextMenu={(e) => {
-              // 🚨 핵심: 브라우저 기본 우클릭 메뉴를 막고 DB 모달창 열기
-              e.preventDefault(); 
+              e.preventDefault();
               setIsMacroModalOpen(true);
             }}
             className={`nf-fab-btn ${!isAutoTextOn ? 'disabled' : ''}`}
@@ -203,15 +223,13 @@ export default function NoticeFormPage() {
         </div>
       </div>
 
-      {/* 🚨 분리된 모달 컴포넌트 마운트 */}
-      <AutoTextModal 
-        isOpen={isMacroModalOpen} 
+      <AutoTextModal
+        isOpen={isMacroModalOpen}
         onClose={() => setIsMacroModalOpen(false)}
         autoTextList={autoTextList}
         onAddAutoText={handleAddAutoText}
         onDeleteAutoText={handleDeleteAutoText}
       />
-
     </div>
   );
 }
