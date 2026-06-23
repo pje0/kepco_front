@@ -1,11 +1,14 @@
+// src/pages/notice/useNoticeLogic.js (v1.1)
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getNotices, getNotice } from '@/api/noticeApi';
+import { useAuth } from '@/context/AuthContext'; // 컨텍스트에서 유저 정보 가져오기
 
 export default function useNoticeLogic() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isInitialMount = useRef(true);
+  const { user } = useAuth(); // 로그인한 유저 정보 추출
 
   const [notices, setNotices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +23,15 @@ export default function useNoticeLogic() {
   const [appliedFilters, setAppliedFilters] = useState({
     startDate: '', endDate: '', condition: 'title_content', keyword: '', dept: '전체'
   });
+
+  // 유저 정보가 로드되거나 변경될 때 소속 부서 필터 자동 할당
+  useEffect(() => {
+    if (user?.department) {
+      console.log("유저 소속 부서로 필터 자동 변경:", user.department);
+      setSearchDept(user.department);
+      setAppliedFilters(prev => ({ ...prev, dept: user.department }));
+    }
+  }, [user?.department]);
 
   const [sortBy, setSortBy] = useState('latest');
   const [pageSize, setPageSize] = useState('10');

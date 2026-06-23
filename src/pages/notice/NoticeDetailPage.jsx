@@ -100,9 +100,12 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 🚨 선(hr) 아래 본문에만 zoom 배율 적용 */}
-            <div className="nd-content transition-all duration-200 transform-origin-top" style={{ zoom: zoomLevel }}>
-              {notice.content}
-            </div>
+            {/* 🚨 HTML 태그를 인식하여 색상, 볼드체 등을 화면에 그대로 렌더링합니다 */}
+            <div 
+              className="nd-content ql-editor transition-all duration-200 transform-origin-top" 
+              style={{ zoom: zoomLevel }}
+              dangerouslySetInnerHTML={{ __html: notice.content }}
+            />
           </div>
 
           <div className="nd-footer print-hide">

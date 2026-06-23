@@ -1,7 +1,10 @@
-import React from 'react';
+// src/pages/notice/NoticeFormPage.jsx (v1.2)
+import React, { useMemo } from 'react';
 import { Save, X, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeFormLogic from './useNoticeFormLogic';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css'; // 🚨 필수: 에디터 기본 CSS
 import './NoticeFormPage.css';
 
 export default function NoticeFormPage() {
@@ -9,6 +12,17 @@ export default function NoticeFormPage() {
     isEditMode, formData, isLoading,
     handleChange, handleSubmit, handleCancel
   } = useNoticeFormLogic();
+
+  // 🚨 에디터 툴바 기능 설정 (볼드, 색상, 정렬 등)
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'align': [] }],
+      ['clean']
+    ],
+  }), []);
 
   if (isLoading) return <LoadingSpinner className="nf-loading" />;
 
@@ -69,15 +83,16 @@ export default function NoticeFormPage() {
             />
           </div>
 
-          {/* 내용 */}
+          {/* 내용 (🚨 ReactQuill 에디터로 교체됨) */}
           <div className="nf-input-group">
             <label className="nf-label">내용 <span className="nf-required">*</span></label>
-            <textarea 
-              className="nf-textarea"
-              placeholder="공지할 상세 내용을 입력하세요."
-              rows={15}
+            <ReactQuill
+              theme="snow"
+              modules={modules}
               value={formData.content}
-              onChange={(e) => handleChange('content', e.target.value)}
+              onChange={(content) => handleChange('content', content)}
+              className="nf-quill-editor"
+              placeholder="공지할 상세 내용을 입력하세요."
             />
           </div>
 
