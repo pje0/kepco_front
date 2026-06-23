@@ -1,0 +1,22 @@
+/* src/pages/report/ReportMyPage.css */
+
+.animate-in {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
+}
+
+.slide-in-from-top-2 {
+  animation-name: slideIn;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

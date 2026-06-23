@@ -1,6 +1,39 @@
-import axiosInstance from './axiosInstance'
+import axiosInstance from './axiosInstance';
 
-/** mock 신고 데이터 */
+// =========================================================================
+// 🚨 [진짜 DB 통신 영역] 조성민 담당 (시민용 민원 신청 및 내 민원 조회)
+// =========================================================================
+
+/**
+ * 신규 민원 접수 API
+ */
+export async function createReport(data) {
+  try {
+    const response = await axiosInstance.post('/reports', data);
+    return response.data;
+  } catch (error) {
+    console.error('민원 접수 실패:', error);
+    throw error;
+  }
+}
+
+/**
+ * 내 민원 목록 조회 API (시민 전용)
+ */
+export async function getMyReports(citizenId) {
+  try {
+    const response = await axiosInstance.get(`/reports/my/${citizenId}`);
+    return response.data;
+  } catch (error) {
+    console.error('내 민원 조회 실패:', error);
+    throw error;
+  }
+}
+
+// =========================================================================
+// 🩹 [가짜 Mock 데이터 영역] 홍현민 담당 (파견팀/대시보드 에러 방지용 복구)
+// =========================================================================
+
 let mockReports = [
   {
     id: 1,
@@ -29,74 +62,38 @@ let mockReports = [
     dispatchedAt: null,
     workerId: null,
     workerName: null,
-  },
-  {
-    id: 3,
-    title: '변압기 이상 소음',
-    type: '고장',
-    address: '서울시 마포구 합정동 789-01',
-    status: 'COMPLETED',
-    reportedAt: '2026-06-14 14:20',
-    citizenId: 2,
-    citizenName: '이인사',
-    description: '변압기에서 이상한 소리가 납니다.',
-    dispatchedAt: '2026-06-14 15:00',
-    workerId: 5,
-    workerName: '정출동',
-  },
-]
-let nextId = 4
+  }
+];
+let nextId = 3;
 
 /**
- * 신고 목록 조회
- * [실제] TODO: return axiosInstance.get('/reports', { params }).then(r => r.data)
+ * 파견팀용 전체 신고 목록 조회 (Mock)
  */
 export async function getReports(params = {}) {
-  await new Promise((r) => setTimeout(r, 300))
-  let result = [...mockReports]
-  if (params.citizenId) result = result.filter((r) => r.citizenId === params.citizenId)
-  if (params.status) result = result.filter((r) => r.status === params.status)
-  return result
+  await new Promise((r) => setTimeout(r, 300));
+  let result = [...mockReports];
+  if (params.citizenId) result = result.filter((r) => r.citizenId === params.citizenId);
+  if (params.status) result = result.filter((r) => r.status === params.status);
+  return result;
 }
 
 /**
- * 신고 단건 조회
- * [실제] TODO: return axiosInstance.get(`/reports/${id}`).then(r => r.data)
+ * 파견팀용 단건 조회 (Mock)
  */
 export async function getReport(id) {
-  await new Promise((r) => setTimeout(r, 200))
-  const report = mockReports.find((r) => r.id === Number(id))
-  if (!report) throw new Error('신고를 찾을 수 없습니다.')
-  return report
+  await new Promise((r) => setTimeout(r, 200));
+  const report = mockReports.find((r) => r.id === Number(id));
+  if (!report) throw new Error('신고를 찾을 수 없습니다.');
+  return report;
 }
 
 /**
- * 신고 접수
- * [실제] TODO: return axiosInstance.post('/reports', data).then(r => r.data)
- */
-export async function createReport(data) {
-  await new Promise((r) => setTimeout(r, 400))
-  const newReport = {
-    id: nextId++,
-    ...data,
-    status: 'PENDING',
-    reportedAt: new Date().toLocaleString('ko-KR'),
-    dispatchedAt: null,
-    workerId: null,
-    workerName: null,
-  }
-  mockReports.push(newReport)
-  return newReport
-}
-
-/**
- * 신고 상태 변경 (파견 담당자용)
- * [실제] TODO: return axiosInstance.patch(`/reports/${id}/status`, { status, workerId }).then(r => r.data)
+ * 파견팀용 신고 상태 변경 (Mock)
  */
 export async function updateReportStatus(id, status, workerId) {
-  await new Promise((r) => setTimeout(r, 300))
-  const idx = mockReports.findIndex((r) => r.id === Number(id))
-  if (idx === -1) throw new Error('신고를 찾을 수 없습니다.')
-  mockReports[idx] = { ...mockReports[idx], status, workerId }
-  return mockReports[idx]
+  await new Promise((r) => setTimeout(r, 300));
+  const idx = mockReports.findIndex((r) => r.id === Number(id));
+  if (idx === -1) throw new Error('신고를 찾을 수 없습니다.');
+  mockReports[idx] = { ...mockReports[idx], status, workerId };
+  return mockReports[idx];
 }
