@@ -8,7 +8,7 @@
 
 /* 설비 번호 아코디언 래퍼 */
 .facility-accordion-wrapper {
-  border: 1px solid #cbd5e1;
+  /* border: 1px solid #cbd5e1; */
   border-radius: 0.5rem;
   overflow: hidden;
   transition: all 0.3s ease;

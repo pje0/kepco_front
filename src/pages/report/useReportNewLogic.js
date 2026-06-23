@@ -12,7 +12,7 @@ export default function useReportNewLogic() {
   const [isAgreed, setIsAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: '', address: '', roadAddress: '', district: '', content: '',
+    title: '', address: '', detailAddress: '', roadAddress: '', district: '', content: '',
   });
 
   const isInitialMount = useRef(true);
@@ -88,6 +88,7 @@ export default function useReportNewLogic() {
         setFormData((prev) => ({
           ...prev,
           address: roadAddr || jibunAddr,
+          detailAddress: '',
           roadAddress: roadAddr,
           district: district,
         }));
@@ -119,13 +120,17 @@ export default function useReportNewLogic() {
     try {
       const districtMatch = formData.district || (formData.address.split(' ').length > 1 ? formData.address.split(' ')[1] : '기타구');
 
+      const fullAddress = formData.detailAddress.trim() 
+        ? `${formData.address} ${formData.detailAddress}` 
+        : formData.address;
+
       await createReport({
         citizenId: Number(user.id),
         citizenName: user.name,
         title: formData.title,
         category: 'AI 분석 대기',
         content: formData.content,
-        address: formData.address,
+        address: fullAddress,
         district: districtMatch,
         severity: 'normal'
       });
@@ -142,32 +147,13 @@ export default function useReportNewLogic() {
   const resetForm = () => {
     setSuccess(false);
     setIsAgreed(false);
-    setFormData({ title: '', address: '', roadAddress: '', district: '', content: '' });
+    setFormData({ title: '', address: '', detailAddress: '', roadAddress: '', district: '', content: '' });
   };
 
   const handlePrint = () => window.print();
 
   const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 2.0));
   const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
-
-  // 🚨 [신규] Ctrl+S 저장 방지 로직 (프로젝트 전체 전역 적용)
-  useEffect(() => {
-    const preventSave = (e) => {
-      // Mac의 Cmd(metaKey)와 Windows의 Ctrl(ctrlKey) + S 조합 감지
-      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
-        e.preventDefault(); // 브라우저의 기본 '저장창 띄우기'를 강제로 취소(차단)합니다.
-        
-        // 화면엔 보이지 않는 의미 없는 행동
-        console.log("보안 정책에 의해 페이지 저장이 차단되었습니다."); 
-      }
-    };
-
-    // 키보드 이벤트 리스너 부착
-    window.addEventListener('keydown', preventSave);
-    
-    // 컴포넌트 언마운트 시 클린업
-    return () => window.removeEventListener('keydown', preventSave);
-  }, []);
 
   return {
     formData, isLoading, success, isAgreed, setIsAgreed, zoomLevel,

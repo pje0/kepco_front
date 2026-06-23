@@ -135,6 +135,14 @@ export default function ReportNewPage() {
                     <MapPin size={18} className="mr-2" /> 주소 검색
                   </Button>
                 </div>
+                {/* 🚨 상세 주소 입력칸 추가 */}
+                <Input
+                  placeholder="상세 주소를 입력해주세요"
+                  value={formData.detailAddress}
+                  onChange={(e) => handleChange('detailAddress', e.target.value)}
+                  disabled={!formData.address || isLoading}
+                  className="bg-white py-6 text-base mt-2"
+                />
               </div>
 
               {/* 상세 내용 */}
