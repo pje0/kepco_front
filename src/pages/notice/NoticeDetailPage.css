@@ -58,8 +58,14 @@
 .nd-font-control button.bold { font-weight: 700; }
 .nd-divider { width: 1px; height: 12px; background-color: #cbd5e1; margin: 0; }
 
-.nd-util-btn { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; font-size: 0.75rem; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: pointer; }
+.nd-util-btn { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; font-size: 0.75rem; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: pointer; transition: all 0.2s; }
 .nd-util-btn:hover { background-color: #f1f5f9; }
+
+/* 🚨 관리자 전용 버튼 스타일 */
+.nd-util-btn.edit { color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff; }
+.nd-util-btn.edit:hover { background-color: #dbeafe; }
+.nd-util-btn.delete { color: #dc2626; border-color: #fecaca; background-color: #fef2f2; }
+.nd-util-btn.delete:hover { background-color: #fee2e2; }
 
 .nd-title { font-size: 2rem; font-weight: 700; color: #0f172a; margin-bottom: 1.5rem; line-height: 1.35; letter-spacing: -0.03em; }
 
@@ -127,6 +133,13 @@
 .dark .nd-font-control, .dark .nd-util-btn { background-color: #1e293b; border-color: #334155; color: #cbd5e1; }
 .dark .nd-font-control button { color: #cbd5e1; }
 .dark .nd-font-control button:hover, .dark .nd-util-btn:hover { background-color: #334155; color: #ffffff; }
+
+/* 🚨 관리자 전용 버튼 다크모드 대응 */
+.dark .nd-util-btn.edit { background-color: rgba(37, 99, 235, 0.2); border-color: #1e3a8a; color: #93c5fd; }
+.dark .nd-util-btn.edit:hover { background-color: rgba(37, 99, 235, 0.3); color: #bfdbfe; }
+.dark .nd-util-btn.delete { background-color: rgba(220, 38, 38, 0.2); border-color: #7f1d1d; color: #fca5a5; }
+.dark .nd-util-btn.delete:hover { background-color: rgba(220, 38, 38, 0.3); color: #fecaca; }
+
 .dark .nd-divider { background-color: #334155; }
 
 .dark .nd-meta { background-color: transparent; border-color: transparent; }

@@ -1,11 +1,14 @@
+// src/pages/notice/useNoticeLogic.js (v1.1)
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getNotices, getNotice } from '@/api/noticeApi';
+import { useAuth } from '@/context/AuthContext'; // 컨텍스트에서 유저 정보 가져오기
 
 export default function useNoticeLogic() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isInitialMount = useRef(true);
+  const { user } = useAuth(); // 로그인한 유저 정보 추출
 
   const [notices, setNotices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +23,28 @@ export default function useNoticeLogic() {
   const [appliedFilters, setAppliedFilters] = useState({
     startDate: '', endDate: '', condition: 'title_content', keyword: '', dept: '전체'
   });
+
+  // 유저 정보가 로드되거나 변경될 때 소속 부서 필터 자동 할당
+  useEffect(() => {
+    if (user?.department) {
+      let initialDept = user.department;
+      
+      // 🚨 1. '복구1팀', '복구2팀' 등은 모두 '복구팀'으로 묶습니다.
+      if (initialDept.includes('복구')) {
+        initialDept = '복구팀';
+      }
+
+      // 🚨 2. 드롭다운에 없는 엉뚱한 부서일 경우 '전체'로 강제 초기화하여 UI와 상태의 불일치를 막습니다.
+      const allowed = ['총괄관리부', '인사관리팀', '시스템운영팀', '안전관리본부', '복구팀'];
+      if (!allowed.includes(initialDept)) {
+        initialDept = '전체';
+      }
+
+      console.log("유저 소속 부서로 필터 자동 변경:", initialDept);
+      setSearchDept(initialDept);
+      setAppliedFilters(prev => ({ ...prev, dept: initialDept }));
+    }
+  }, [user?.department]);
 
   const [sortBy, setSortBy] = useState('latest');
   const [pageSize, setPageSize] = useState('10');
@@ -89,6 +114,8 @@ export default function useNoticeLogic() {
     if (appliedFilters.dept !== '전체') {
       result = result.filter(notice => {
         const dept = notice.department || notice.author || '';
+        // 🚨 3. '복구팀'을 선택했을 땐 '복구'라는 단어가 포함된 모든 부서의 글을 보여줌
+        if (appliedFilters.dept === '복구팀' && dept.includes('복구')) return true;
         return dept === appliedFilters.dept;
       });
     }

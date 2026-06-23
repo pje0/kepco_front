@@ -1,13 +1,19 @@
 import React from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut } from 'lucide-react';
+import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext'; // 🚨 관리자 권한 확인용
+import { toast } from 'sonner';
+import { deleteNotice } from '@/api/noticeApi';
 import useNoticeDetailLogic from './useNoticeDetailLogic';
 import './NoticeDetailPage.css';
-
 export default function NoticeDetailPage() {
+  const { user } = useAuth();
+  // 🚨 수정: 시민(ROLE_CITIZEN)을 제외한 모든 한전 직원에게 권한 부여
+  const isEmployee = user?.role && user.role !== 'ROLE_CITIZEN';
+  
   const {
     notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
-    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate,
+    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate, // 🚨 hook에서 주는 것만 사용!
     zoomLevel, zoomIn, zoomOut, zoomControlRef
   } = useNoticeDetailLogic();
 
@@ -60,6 +66,26 @@ export default function NoticeDetailPage() {
                   <button className="nd-util-btn" onClick={handleDetailPrint}>
                     <Printer size={14} /> 인쇄
                   </button>
+
+                  {/* 🚨 직원 전용 수정/삭제 버튼 */}
+                  {isEmployee && (
+                    <>
+                      <div className="nd-divider"></div>
+                      <button className="nd-util-btn edit" onClick={() => navigate(`/notice/edit/${noticeId}`)}>
+                        <Edit size={14} /> 수정
+                      </button>
+                      <button className="nd-util-btn delete" onClick={() => {
+                        if (window.confirm('정말 이 공지사항을 삭제하시겠습니까?')) {
+                          deleteNotice(noticeId).then(() => {
+                            toast.success('공지사항이 완벽하게 삭제되었습니다.', { position: 'bottom-right' });
+                            navigate('/notice');
+                          }).catch(() => toast.error('삭제에 실패했습니다.'));
+                        }
+                      }}>
+                        <Trash2 size={14} /> 삭제
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               
@@ -75,9 +101,12 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 🚨 선(hr) 아래 본문에만 zoom 배율 적용 */}
-            <div className="nd-content transition-all duration-200 transform-origin-top" style={{ zoom: zoomLevel }}>
-              {notice.content}
-            </div>
+            {/* 🚨 HTML 태그를 인식하여 색상, 볼드체 등을 화면에 그대로 렌더링합니다 */}
+            <div 
+              className="nd-content ql-editor transition-all duration-200 transform-origin-top" 
+              style={{ zoom: zoomLevel }}
+              dangerouslySetInnerHTML={{ __html: notice.content }}
+            />
           </div>
 
           <div className="nd-footer print-hide">

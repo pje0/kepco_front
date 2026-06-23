@@ -126,6 +126,7 @@ export default function useReportMyLogic() {
     handleDateRange,
     handleSearch,
     toggleAccordion,
-    formatDisplayDate
+    formatDisplayDate,
+    reports
   };
 }
