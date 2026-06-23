@@ -18,6 +18,7 @@ import EmployeePage from '@/pages/employee/EmployeePage'
 import NoticePage from '@/pages/notice/NoticePage'
 import WorkPage from '@/pages/work/WorkPage'
 import ResourcePage from '@/pages/resource/ResourcePage'
+import DispatchHistory from '@/pages/dispatch/DispatchHistory'
 
 // 📁 3. 신고 처리 영역 (report)
 import ReportNewPage from '@/pages/report/ReportNewPage'
@@ -81,6 +82,7 @@ export default function AppRouter() {
           <Route element={<ProtectedRoute allowedRoles={['ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_ADMIN']} />}>
             <Route path="/dispatch" element={<DispatchPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dispatch/history" element={<DispatchHistory />} />
           </Route>
 
           {/* 🔴 [현장출동 기사 전용 권한 제한] - ROLE_WORKER만 */}
