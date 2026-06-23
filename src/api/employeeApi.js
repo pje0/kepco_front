@@ -4,12 +4,12 @@ const API_BASE_URL = '/hr'
 
 /**
  * 1. [실제 DB] 임직원 명부 전체 조회 (하이브리드 페이징용)
- * - 백엔드 URL 변경: GET /api/hr/users ➡️ GET /api/hr/users/all
- * - 응답: AdminUserResponseDto 기반 임직원 전체 배열 반환
+ * - 백엔드 URL 규격: GET /api/hr/users
+ * - 💡 주의: 팀원 브랜치와 병합되면서 /users/all이 아니라 /users가 전체 데이터를 리턴합니다!
  */
 export async function getEmployees() {
-  // 🌟 /users 대신 백엔드의 2-5번 메서드 주소인 /users/all 로 변경합니다.
-  return axiosInstance.get(`${API_BASE_URL}/users/all`)
+  // 🌟 뒤에 붙였던 /all 을 지우고 원래 주소인 ${API_BASE_URL}/users 로 변경합니다.
+  return axiosInstance.get(`${API_BASE_URL}/users`)
     .then((r) => r.data)
 }
 
