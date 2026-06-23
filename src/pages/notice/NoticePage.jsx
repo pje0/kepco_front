@@ -10,7 +10,8 @@ import './NoticePage.css';
 
 export default function NoticePage() {
   const { user } = useAuth(); 
-  const isAdmin = user?.role === 'ROLE_ADMIN'; 
+  // 🚨 수정: 시민(ROLE_CITIZEN)을 제외한 모든 한전 직원에게 버튼 노출
+  const isEmployee = user?.role && user.role !== 'ROLE_CITIZEN';
   const navigate = useNavigate(); // 🚨 추가: 플로팅 버튼용
   const {
     notices, isLoading,
@@ -254,9 +255,9 @@ export default function NoticePage() {
         </DialogContent>
       </Dialog>
 
-      {/* =관리자 전용 플로팅 글쓰기 버튼 */}
-      {isAdmin && (
-        <button 
+      {/* 🚨 직원 전용 글쓰기 플로팅 버튼 */}
+      {isEmployee && (
+        <button
           className="notice-write-fab print-hide"
           onClick={() => navigate('/notice/new')}
         >

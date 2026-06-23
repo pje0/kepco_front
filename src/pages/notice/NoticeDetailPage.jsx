@@ -8,7 +8,8 @@ import useNoticeDetailLogic from './useNoticeDetailLogic';
 import './NoticeDetailPage.css';
 export default function NoticeDetailPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ROLE_ADMIN';
+  // 🚨 수정: 시민(ROLE_CITIZEN)을 제외한 모든 한전 직원에게 권한 부여
+  const isEmployee = user?.role && user.role !== 'ROLE_CITIZEN';
   
   const {
     notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
@@ -66,8 +67,8 @@ export default function NoticeDetailPage() {
                     <Printer size={14} /> 인쇄
                   </button>
 
-                  {/* 🚨 관리자 전용: 수정 및 삭제 버튼 */}
-                  {isAdmin && (
+                  {/* 🚨 직원 전용 수정/삭제 버튼 */}
+                  {isEmployee && (
                     <>
                       <div className="nd-divider"></div>
                       <button className="nd-util-btn edit" onClick={() => navigate(`/notice/edit/${noticeId}`)}>
