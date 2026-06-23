@@ -71,7 +71,7 @@ export default function EmployeePage() {
       (e.empNumber && e.empNumber.toLowerCase().includes(search.toLowerCase()))
   )
 
-  // ⚠️ [버그 프리 안심 장치]: 사용자가 검색어를 바꾸면 페이지 번호를 강제로 1페이지로 싱크 원복
+  // 사용자가 검색어를 바꾸면 페이지 번호를 강제로 1페이지로 싱크 원복
   useEffect(() => {
     setCurrentPage(1)
   }, [search])

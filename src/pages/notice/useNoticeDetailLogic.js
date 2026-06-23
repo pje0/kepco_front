@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getNotice, getNotices } from '@/api/noticeApi'; 
 import { toast } from 'sonner';
@@ -12,9 +12,29 @@ export default function useNoticeDetailLogic() {
   const [notice, setNotice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [surroundingPosts, setSurroundingPosts] = useState([]);
-  const [recentPosts, setRecentPosts] = useState([]); // 🚨 최근 읽은 글 상태
+  const [recentPosts, setRecentPosts] = useState([]); 
   
-  const [fontSize, setFontSize] = useState(16);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
+  const zoomControlRef = useRef(null);
+
+  // 🚨 [핵심 수정 포인트] 의존성 배열에 isLoading, notice를 추가했습니다.
+  // 로딩 스피너가 끝나고 실제 버튼이 화면에 그려진 '직후'에 센서가 정확하게 부착됩니다!
+  useEffect(() => {
+    const el = zoomControlRef.current;
+    if (!el) return;
+
+    const handleNativeWheel = (e) => {
+      e.preventDefault(); 
+      if (e.deltaY < 0) {
+        setZoomLevel((prev) => Math.min(prev + 0.1, 2.0));
+      } else if (e.deltaY > 0) {
+        setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
+      }
+    };
+
+    el.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleNativeWheel);
+  }, [isLoading, notice]);
 
   useEffect(() => {
     if (noticeId) {
@@ -40,7 +60,6 @@ export default function useNoticeDetailLogic() {
           displayNum: item.isPinned ? '공지' : allList.length - index
         }));
 
-        // 1. 주변 게시글 추출
         const currentIndex = listWithNums.findIndex(item => String(item.id) === String(noticeId));
         if (currentIndex !== -1) {
           const startIdx = Math.max(0, currentIndex - 2);
@@ -48,21 +67,18 @@ export default function useNoticeDetailLogic() {
           setSurroundingPosts(listWithNums.slice(startIdx, endIdx + 1));
         }
 
-        // 2. 🚨 최근 방문한 글(Visited) 로직 처리
         const saved = localStorage.getItem('visited_notices');
         let visitedIds = saved ? JSON.parse(saved) : [];
         
-        // 현재 보고 있는 글을 기록의 맨 뒤(최신)로 이동
         visitedIds = visitedIds.filter(id => id !== String(noticeId)); 
         visitedIds.push(String(noticeId)); 
-        if (visitedIds.length > 20) visitedIds = visitedIds.slice(visitedIds.length - 20); // 최대 20개만 보관
+        if (visitedIds.length > 20) visitedIds = visitedIds.slice(visitedIds.length - 20); 
         
         localStorage.setItem('visited_notices', JSON.stringify(visitedIds));
 
-        // 최근 읽은 글 5개 추출 (현재 화면에 띄워둔 글은 제외)
         const recent = visitedIds
           .slice()
-          .reverse() // 최신순으로 뒤집기
+          .reverse() 
           .map(vId => listWithNums.find(n => String(n.id) === String(vId)))
           .filter(n => n && String(n.id) !== String(noticeId))
           .slice(0, 5);
@@ -94,11 +110,12 @@ export default function useNoticeDetailLogic() {
     });
   };
 
-  const increaseFontSize = () => setFontSize(prev => Math.min(24, prev + 2));
-  const decreaseFontSize = () => setFontSize(prev => Math.max(12, prev - 2));
+  const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 2.0));
+  const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
 
   return {
-    notice, noticeId, isLoading, surroundingPosts, recentPosts, fontSize, originPage,
-    increaseFontSize, decreaseFontSize, displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate
+    notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
+    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate,
+    zoomLevel, zoomIn, zoomOut, zoomControlRef
   };
 }
