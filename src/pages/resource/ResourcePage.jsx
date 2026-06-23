@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
-import { FolderOpen, Download, FileText, BookOpen, Lightbulb, FileCheck, ClipboardList, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { FolderOpen, Download, FileText, Search, ChevronLeft, ChevronRight, Upload } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { getResources, downloadResource } from '@/api/resourceApi'
+import { useAuth } from '@/context/AuthContext'
 
 const CATEGORIES = [
   { id: '', label: '전체' },
@@ -30,6 +32,10 @@ export default function ResourcePage() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN'
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -85,9 +91,17 @@ export default function ResourcePage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-2">
-        <FolderOpen className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">자료실</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold">자료실</h1>
+        </div>
+        {isAdmin && (
+          <Button onClick={() => navigate('/resources/upload')}>
+            <Upload className="h-4 w-4 mr-1" />
+            자료 등록
+          </Button>
+        )}
       </div>
 
       {/* 필터 + 검색 영역 */}
@@ -179,16 +193,16 @@ export default function ResourcePage() {
                   {/* 다운로드 버튼 */}
                   <div className="col-span-2 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">{res.downloads}</span>
-                   <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!res.fileUrl}
-                    onClick={() => downloadResource(res.id)}
-                    className="gap-1"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">다운</span>
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!res.fileUrl}
+                      onClick={() => downloadResource(res.id)}
+                      className="gap-1"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">다운</span>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -236,7 +250,6 @@ export default function ResourcePage() {
               </Button>
             </div>
           )}
-
         </>
       )}
     </div>
