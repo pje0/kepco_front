@@ -1,6 +1,7 @@
 /* ── 1. 공통 컨테이너 뷰포트 ── */
 .notice-container {
   width: 100%;
+  max-width: 1200px;
   min-width: 900px; /* 화면(뷰포트) 전체 가로 넓이의 50% 이하로 줄어들지 않도록 고정 */
   margin: 0 auto;
   font-family: 'Pretendard', sans-serif;
@@ -224,4 +225,125 @@
   .table-wrapper { border-top: 2px solid #000 !important; border-bottom: 1px solid #000 !important; }
   .notice-table th { background-color: #f1f5f9 !important; color: #000 !important; border-bottom: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .notice-table td { color: #000 !important; border-bottom: 1px solid #ccc !important; }
+}
+
+/* ========================================================
+   🌙 다크 모드 (Dark Mode) 완벽 지원 스타일 
+======================================================== */
+.dark .notice-container {
+  color: #f1f5f9;
+}
+
+/* 검색 필터 박스 */
+.dark .search-box {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+.dark .search-label {
+  color: #94a3b8;
+}
+.dark .input-box {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .input-box:focus {
+  border-color: #3b82f6;
+}
+.dark .divider {
+  background-color: #334155;
+}
+
+/* 퀵 버튼 및 조회 버튼 */
+.dark .quick-btn {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+.dark .quick-btn:hover {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+.dark .quick-btn.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+.dark .search-submit-btn {
+  background-color: #2563eb;
+}
+.dark .search-submit-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* 컨트롤 바 (조회 건수, 인쇄) */
+.dark .total-count {
+  color: #cbd5e1;
+}
+.dark .print-btn {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.dark .print-btn:hover {
+  background-color: #334155;
+}
+
+/* 메인 테이블 (표) */
+.dark .table-wrapper {
+  border-top-color: #64748b;
+  border-bottom-color: #334155;
+  background-color: transparent;
+}
+.dark .notice-table th {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border-bottom-color: #334155;
+}
+.dark .notice-table td {
+  color: #e2e8f0;
+  border-bottom-color: #1e293b;
+}
+.dark .table-row:hover {
+  background-color: #0f172a;
+}
+.dark .title-link {
+  color: #e2e8f0;
+}
+.dark .title-link:hover {
+  color: #60a5fa;
+}
+.dark .title-link.text-slate-400 { /* 읽은 글 색상 */
+  color: #64748b !important;
+}
+.dark .quick-view-btn {
+  color: #64748b;
+}
+.dark .quick-view-btn:hover {
+  background-color: #334155;
+  color: #f8fafc;
+}
+.dark .empty-message {
+  color: #64748b;
+}
+
+/* 페이지네이션 (동그라미) */
+.dark .page-btn, 
+.dark .page-number {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.dark .page-btn:hover:not(:disabled), 
+.dark .page-number:hover:not(.active) {
+  background-color: #334155;
+}
+.dark .page-btn:disabled {
+  background-color: #0f172a;
+  opacity: 0.4;
+}
+.dark .page-number.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
 }
