@@ -1,0 +1,142 @@
+/* ── 상용구 관리 모달 전용 CSS ── */
+.nf-modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.nf-modal-content {
+  background-color: #ffffff;
+  border-radius: 8px; width: 450px; max-width: 90%;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.nf-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+.nf-modal-header h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+.nf-modal-header button { background: none; border: none; color: #64748b; cursor: pointer; }
+.nf-modal-header button:hover { color: #dc2626; }
+
+/* 🚨 1. 입력 폼 영역: 줄바꿈 방지 및 좌우 대칭 완벽 정렬 */
+.nf-modal-add-form {
+  display: flex; 
+  flex-wrap: nowrap; /* 🚨 억지 줄바꿈 원천 차단 */
+  gap: 0.5rem; 
+  padding: 1.25rem; 
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.nf-modal-add-form input {
+  flex: 1; 
+  min-width: 0; /* 🚨 입력창이 오른쪽 여백을 뚫고 나가는 현상 방지 (핵심) */
+  box-sizing: border-box; /* 패딩을 넓이에 포함시켜 좌우 대칭 보장 */
+  padding: 0.5rem 0.75rem; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 4px; 
+  font-size: 0.875rem; 
+  outline: none;
+}
+
+.nf-modal-add-form input:focus { 
+  border-color: #3b82f6; 
+}
+
+.nf-modal-add-form button {
+  flex-shrink: 0; /* 🚨 공간이 좁아져도 버튼 크기 찌그러짐 방지 */
+  white-space: nowrap; /* 버튼 글자 줄바꿈 방지 */
+  background-color: #2563eb; 
+  color: white; 
+  border: none; 
+  border-radius: 4px; 
+  padding: 0 1.25rem;
+  font-weight: 600; 
+  cursor: pointer;
+}
+
+.nf-modal-add-form button:hover { 
+  background-color: #1d4ed8; 
+}
+
+/* 🚨 2. 리스트 영역: 긴 단어 입력 시 줄바꿈 방지 및 ... 처리 */
+.nf-modal-list { 
+  max-height: 250px; 
+  overflow-y: auto; 
+  padding: 0.5rem 1.25rem 1.25rem; 
+}
+
+.nf-modal-empty { 
+  text-align: center; 
+  color: #94a3b8; 
+  padding: 2rem 0; 
+  font-size: 0.875rem; 
+}
+
+.nf-modal-list-item {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  padding: 0.5rem 0; 
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.nf-modal-list-item:last-child { 
+  border-bottom: none; 
+}
+
+.nf-macro-text { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.75rem; 
+  font-size: 0.875rem; 
+  flex: 1; 
+  min-width: 0; /* 🚨 텍스트 넘침 방지 */
+}
+
+.macro-short { 
+  font-weight: 700; 
+  color: #1e3a8a; 
+  white-space: nowrap; 
+}
+
+.macro-arrow { 
+  color: #cbd5e1; 
+  font-size: 0.7rem; 
+  flex-shrink: 0; 
+}
+
+.macro-replace { 
+  color: #475569; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; /* 너무 길면 ... 처리 */
+}
+
+.nf-modal-list-item button { 
+  flex-shrink: 0;
+  background: none; 
+  border: none; 
+  color: #f87171; 
+  cursor: pointer; 
+  padding: 0.25rem; 
+  border-radius: 4px; 
+}
+
+.nf-modal-list-item button:hover { 
+  background-color: #fef2f2; 
+  color: #dc2626; 
+}
+
+/* 모달 다크모드 대응 */
+.dark .nf-modal-content { background-color: #0f172a; border: 1px solid #334155; }
+.dark .nf-modal-header { background-color: #1e293b; border-bottom-color: #334155; }
+.dark .nf-modal-header h2 { color: #f8fafc; }
+.dark .nf-modal-add-form { border-bottom-color: #334155; }
+.dark .nf-modal-add-form input { background-color: #1e293b; border-color: #475569; color: white; }
+.dark .nf-modal-list-item { border-bottom-color: #1e293b; }
+.dark .macro-short { color: #60a5fa; }
+.dark .macro-replace { color: #cbd5e1; }
+.dark .nf-modal-list-item button:hover { background-color: rgba(127, 29, 29, 0.3); }

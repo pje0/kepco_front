@@ -66,3 +66,21 @@ export const createNoticeTemplate = async (payload) => {
   console.log("[noticeApi] createNoticeTemplate 서버 응답 데이터 수신 완료:", response.data);
   return response.data;
 };
+
+// 🚨 수정: 주소창 앞의 '/api' 제거
+export const getAutoTexts = async () => {
+  const response = await axiosInstance.get('/notices/autotexts');
+  return response.data;
+};
+
+// 🚨 수정: 주소창 앞의 '/api' 제거
+export const createAutoText = async (data) => {
+  const response = await axiosInstance.post('/notices/autotexts', data);
+  return response.data;
+};
+
+// 🚨 수정: 주소창 앞의 '/api' 제거
+export const deleteAutoText = async (id) => {
+  const response = await axiosInstance.delete(`/notices/autotexts/${id}`);
+  return response.data;
+};
