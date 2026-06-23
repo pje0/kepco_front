@@ -1,47 +1,44 @@
 import axiosInstance from './axiosInstance'
 
-let mockDispatches = [
-  { id: 1, reportId: 1, reportTitle: '아파트 단지 전체 정전', workerId: 1, workerName: '정출동', dispatchedAt: '2026-06-15 09:45', status: 'IN_PROGRESS', note: '현장 도착, 점검 중' },
-  { id: 2, reportId: 3, reportTitle: '변압기 이상 소음', workerId: 2, workerName: '한출동', dispatchedAt: '2026-06-14 15:00', status: 'COMPLETED', note: '변압기 교체 완료' },
-]
-let nextId = 3
-
 /**
- * 파견 목록 조회
- * [실제] TODO: return axiosInstance.get('/dispatches', { params }).then(r => r.data)
+ * 실시간 파견 목록 조회
+ * - PostgreSQL 'dispatch' 마스터 테이블 실시간 연동 가동
+ * - ⚡ [대문자 개혁]: 모든 params 상태 코드를 확고하게 대문자 규격으로 전송
  */
 export async function getDispatches(params = {}) {
-  await new Promise((r) => setTimeout(r, 300))
-  let result = [...mockDispatches]
-  if (params.status) result = result.filter((d) => d.status === params.status)
-  if (params.workerId) result = result.filter((d) => d.workerId === params.workerId)
-  return result
+  const queryParams = {};
+  if (params.status) {
+    queryParams.status = params.status.toUpperCase(); // 무조건 대문자 변환 가드
+  }
+  if (params.workerId) {
+    queryParams.workerId = Number(params.workerId);
+  }
+
+  return axiosInstance.get('/api/dispatch', { params: queryParams })
+    .then(response => response.data)
 }
 
 /**
- * 파견 지시 생성
- * [실제] TODO: return axiosInstance.post('/dispatches', data).then(r => r.data)
+ * 복수 파견 지시 트랜잭션 생성 (1대다 팀 빌딩 연동)
+ * - ⚡ [대문자 개혁]: note 내에 패킹되는 teamRole 직급 문자열을 대문자로 박멸
  */
 export async function createDispatch(data) {
-  await new Promise((r) => setTimeout(r, 400))
-  const newDispatch = {
-    id: nextId++,
-    ...data,
-    dispatchedAt: new Date().toLocaleString('ko-KR'),
-    status: 'DISPATCHED',
+  const payload = {
+    complaintId: Number(data.reportId),
+    workerId: Number(data.workerId),
+    workNote: data.note // DispatchPage에서 이미 '[MASTER] 지시내용' 형태로 대문자 패킹되어 유입됨
   }
-  mockDispatches.push(newDispatch)
-  return newDispatch
+  return axiosInstance.post('/api/dispatch', payload)
+    .then(response => response.data)
 }
 
 /**
- * 파견 상태 업데이트
- * [실제] TODO: return axiosInstance.patch(`/dispatches/${id}`, { status, note }).then(r => r.data)
+ * 파견 라이프사이클 상태 강제 전환 및 업데이트
+ * - ⚡ [대문자 개혁]: 403 Forbidden 차단막을 허물기 위해 전송 상태값을 무조건 대문자로 강제 빌딩
+ * - 매핑 주소 규격: PATCH /api/dispatch/{id}/status
  */
 export async function updateDispatch(id, data) {
-  await new Promise((r) => setTimeout(r, 300))
-  const idx = mockDispatches.findIndex((d) => d.id === Number(id))
-  if (idx === -1) throw new Error('파견 정보를 찾을 수 없습니다.')
-  mockDispatches[idx] = { ...mockDispatches[idx], ...data }
-  return mockDispatches[idx]
+  return axiosInstance.patch(`/api/dispatch/${Number(id)}/status`, {
+    status: data.status ? data.status.toUpperCase() : undefined // ASSIGNED, IN_PROGRESS, RESOLVED 대문자 강제 바인딩
+  }).then(response => response.data)
 }

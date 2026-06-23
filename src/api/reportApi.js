@@ -31,69 +31,43 @@ export async function getMyReports(citizenId) {
 }
 
 // =========================================================================
-// 🩹 [가짜 Mock 데이터 영역] 홍현민 담당 (파견팀/대시보드 에러 방지용 복구)
+// 🩹 [파견 관제팀 서비스 영역] 홍현민 담당 (실시간 PostgreSQL 마스터 매핑)
 // =========================================================================
 
-let mockReports = [
-  {
-    id: 1,
-    title: '아파트 단지 전체 정전',
-    type: '정전',
-    address: '서울시 강남구 역삼동 123-45',
-    status: 'DISPATCHED',
-    reportedAt: '2026-06-15 09:12',
-    citizenId: 1,
-    citizenName: '김시민',
-    description: '어제 저녁부터 아파트 전체가 정전 상태입니다.',
-    dispatchedAt: '2026-06-15 09:45',
-    workerId: 5,
-    workerName: '정출동',
-  },
-  {
-    id: 2,
-    title: '가로등 고장',
-    type: '고장',
-    address: '서울시 서초구 방배동 456-78',
-    status: 'PENDING',
-    reportedAt: '2026-06-16 07:30',
-    citizenId: 1,
-    citizenName: '김시민',
-    description: '골목 가로등 3개가 며칠째 꺼져 있습니다.',
-    dispatchedAt: null,
-    workerId: null,
-    workerName: null,
-  }
-];
-let nextId = 3;
-
 /**
- * 파견팀용 전체 신고 목록 조회 (Mock)
+ * 파견팀용 전체 신고 목록 실시간 조회
+ * - ⚡ [대문자 개혁]: 소문자 변환 찌꺼기 로직을 전면 박멸하고, DB와 백엔드 규격에 맞춰 확고하게 대문자 전송
  */
 export async function getReports(params = {}) {
-  await new Promise((r) => setTimeout(r, 300));
-  let result = [...mockReports];
-  if (params.citizenId) result = result.filter((r) => r.citizenId === params.citizenId);
-  if (params.status) result = result.filter((r) => r.status === params.status);
-  return result;
+  const queryParams = {};
+  if (params.citizenId) queryParams.citizenId = params.citizenId;
+  
+  // 💡 [수선]: 기존 .toLowerCase()를 폐기하고 백엔드가 기대하는 대문자(PENDING 등) 포맷을 강제 유지
+  if (params.status) {
+    queryParams.status = params.status.toUpperCase();
+  }
+
+  return axiosInstance.get('/api/complaint', { params: queryParams })
+    .then((r) => r.data);
 }
 
 /**
- * 파견팀용 단건 조회 (Mock)
+ * 파견팀용 단건 민원 상세 실시간 조회
  */
 export async function getReport(id) {
-  await new Promise((r) => setTimeout(r, 200));
-  const report = mockReports.find((r) => r.id === Number(id));
-  if (!report) throw new Error('신고를 찾을 수 없습니다.');
-  return report;
+  return axiosInstance.get(`/api/complaint/${Number(id)}`)
+    .then((r) => r.data);
 }
 
 /**
- * 파견팀용 신고 상태 변경 (Mock)
+ * 파견팀용 신고 상태 변경 및 대원 배정 트랜잭션
+ * - ⚡ [대문자 개혁]: 백엔드 엔티티 수선 스펙과 일치하도록 상태 파라미터를 대문자로 보정 송출
  */
 export async function updateReportStatus(id, status, workerId) {
-  await new Promise((r) => setTimeout(r, 300));
-  const idx = mockReports.findIndex((r) => r.id === Number(id));
-  if (idx === -1) throw new Error('신고를 찾을 수 없습니다.');
-  mockReports[idx] = { ...mockReports[idx], status, workerId };
-  return mockReports[idx];
+  return axiosInstance.patch(`/api/complaint/${Number(id)}`, { 
+    // 💡 [수선]: 대문자(ASSIGNED, IN_PROGRESS, RESOLVED) 패킷 규격 강제 동기화
+    status: status ? status.toUpperCase() : undefined, 
+    workerId: workerId ? Number(workerId) : undefined 
+  })
+  .then((r) => r.data);
 }

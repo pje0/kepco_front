@@ -10,6 +10,7 @@ import {
   Truck,
   HardHat,
   BarChart3,
+  History, // 🚨 [추가] 과거 이력 메뉴용 시각적 앵커 아이콘 임포트
   Zap,
   X,
 } from 'lucide-react'
@@ -35,6 +36,17 @@ const NAV_ITEMS = [
   { to: '/employee',  label: '인사관리',  icon: Users,         roles: ['ROLE_HR'] },
   // 파견
   { to: '/dispatch',  label: '파견 관리', icon: Truck,         roles: ['ROLE_DISPATCHER'] },
+  
+  // 🔐 [최종 과업: 관제 책임자 전용 동적 은닉 메뉴 등록]
+  // - 컨벤션에 맞춰 '파견 관리' 바로 아래에 정교하게 배치 완료했습니다.
+  // - AppRouter 가드 스펙과 100% 일치시켜 오직 관리자 및 파견관제 운영진에게만 동적으로 노출합니다.
+  { 
+    to: '/dispatch/history', 
+    label: '과거 완료 이력', 
+    icon: History, 
+    roles: ['ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_ADMIN'] 
+  },
+  
   // 출동요원
   { to: '/work',      label: '출동 확인', icon: HardHat,       roles: ['ROLE_WORKER'] },
   // 관리자
