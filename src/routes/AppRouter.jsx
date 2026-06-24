@@ -16,6 +16,8 @@ import DashboardPage from '@/pages/dashboard/DashboardPage'
 import DispatchPage from '@/pages/dispatch/DispatchPage'
 import EmployeePage from '@/pages/employee/EmployeePage'
 import NoticePage from '@/pages/notice/NoticePage'
+import NoticeDetailPage from '@/pages/notice/NoticeDetailPage'
+import NoticeFormPage from '@/pages/notice/NoticeFormPage'
 import WorkPage from '@/pages/work/WorkPage'
 import ResourcePage from '@/pages/resource/ResourcePage'
 import DispatchHistory from '@/pages/dispatch/DispatchHistory'
@@ -55,7 +57,7 @@ export default function AppRouter() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
-         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Route>
 
       {/* 🟡 [인증 필수 영역] - 로그인만 하면 누구나 (시민/임직원 공통) */}
@@ -65,12 +67,19 @@ export default function AppRouter() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/notice" element={<NoticePage />} />
+          <Route path="/notice/:id" element={<NoticeDetailPage />} />
           {/* 💡 Sidebar.jsx의 메뉴 주소인 /resources 와 철자를 완벽하게 일치시켰습니다. */}
           <Route path="/resources" element={<ResourcePage />} />
-          
+              
           {/* 민원 신고 접수 및 내역 확인 */}
           <Route path="/report/new" element={<ReportNewPage />} />
           <Route path="/report/my" element={<ReportMyPage />} />
+
+          {/* 🚨 [임직원 전용 권한 제한] - 공지사항 작성 및 수정은 시민(ROLE_CITIZEN) 제외 모든 직원 접근 가능 */}
+          <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_HR', 'ROLE_DISPATCHER', 'ROLE_DISPATCH', 'ROLE_WORKER']} />}>
+            <Route path="/notice/new" element={<NoticeFormPage />} />
+            <Route path="/notice/edit/:id" element={<NoticeFormPage />} />
+          </Route>
 
           {/* 🔴 [인사팀 전용 권한 제한] - ROLE_HR 또는 ROLE_ADMIN만 */}
           <Route element={<ProtectedRoute allowedRoles={['ROLE_HR', 'ROLE_ADMIN']} />}>
