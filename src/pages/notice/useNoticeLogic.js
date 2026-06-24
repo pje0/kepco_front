@@ -1,14 +1,15 @@
-// src/pages/notice/useNoticeLogic.js (v1.1)
+// src/pages/notice/useNoticeLogic.js
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getNotices, getNotice } from '@/api/noticeApi';
-import { useAuth } from '@/context/AuthContext'; // 컨텍스트에서 유저 정보 가져오기
+import { getNotices, getNotice, getDraftNotices, deleteNotice } from '@/api/noticeApi';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 export default function useNoticeLogic() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isInitialMount = useRef(true);
-  const { user } = useAuth(); // 로그인한 유저 정보 추출
+  const { user } = useAuth();
 
   const [notices, setNotices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,18 +30,15 @@ export default function useNoticeLogic() {
     if (user?.department) {
       let initialDept = user.department;
       
-      // 🚨 1. '복구1팀', '복구2팀' 등은 모두 '복구팀'으로 묶습니다.
       if (initialDept.includes('복구')) {
         initialDept = '복구팀';
       }
 
-      // 🚨 2. 드롭다운에 없는 엉뚱한 부서일 경우 '전체'로 강제 초기화하여 UI와 상태의 불일치를 막습니다.
       const allowed = ['총괄관리부', '인사관리팀', '시스템운영팀', '안전관리본부', '복구팀'];
       if (!allowed.includes(initialDept)) {
         initialDept = '전체';
       }
 
-      console.log("유저 소속 부서로 필터 자동 변경:", initialDept);
       setSearchDept(initialDept);
       setAppliedFilters(prev => ({ ...prev, dept: initialDept }));
     }
@@ -50,7 +48,7 @@ export default function useNoticeLogic() {
   const [pageSize, setPageSize] = useState('10');
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-  // 🚨 [신규 기능 1] 방문한 글 기록 (localStorage 활용)
+  // 방문한 글 기록 (localStorage 활용)
   const [visitedPosts, setVisitedPosts] = useState(() => {
     const saved = localStorage.getItem('visited_notices');
     return saved ? JSON.parse(saved) : [];
@@ -114,7 +112,6 @@ export default function useNoticeLogic() {
     if (appliedFilters.dept !== '전체') {
       result = result.filter(notice => {
         const dept = notice.department || notice.author || '';
-        // 🚨 3. '복구팀'을 선택했을 땐 '복구'라는 단어가 포함된 모든 부서의 글을 보여줌
         if (appliedFilters.dept === '복구팀' && dept.includes('복구')) return true;
         return dept === appliedFilters.dept;
       });
@@ -214,12 +211,11 @@ export default function useNoticeLogic() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
-  const [modalIndex, setModalIndex] = useState(-1); // 🚨 추가: 현재 모달에 뜬 글의 전체 순번
+  const [modalIndex, setModalIndex] = useState(-1);
 
   const openQuickView = async (noticeItem) => {
     if (!noticeItem) return;
 
-    // 🚨 추가: 전체 리스트(filteredAndSortedNotices) 기준의 위치 인덱스를 찾아서 저장합니다.
     const globalIndex = filteredAndSortedNotices.findIndex(n => String(n.id) === String(noticeItem.id));
     setModalIndex(globalIndex);
 
@@ -238,18 +234,47 @@ export default function useNoticeLogic() {
     }
   };
 
-  // 🚨 추가: 화살표를 눌렀을 때 좌우로 이동하는 함수
   const handleModalNav = (direction) => {
     const newIndex = modalIndex + direction;
     if (newIndex >= 0 && newIndex < filteredAndSortedNotices.length) {
       const targetNotice = filteredAndSortedNotices[newIndex];
-      openQuickView(targetNotice); // 다음/이전 글로 모달 갱신
+      openQuickView(targetNotice);
 
-      // 모달을 넘기다가 다음 페이지 글이 나오면, 뒤에 깔린 테이블의 페이지 번호도 맞게 넘겨줍니다.
       const newPage = Math.floor(newIndex / Number(pageSize)) + 1;
       if (newPage !== currentPage) {
         setSearchParams({ page: String(newPage) });
       }
+    }
+  };
+
+  // 🚨 임시저장(Draft) 보관함 관리 로직 추가
+  const [draftNotices, setDraftNotices] = useState([]);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+
+  const openDraftBox = async () => {
+    setIsDraftModalOpen(true);
+    try {
+      const data = await getDraftNotices();
+      setDraftNotices(data || []);
+    } catch (error) {
+      toast.error("임시저장 목록을 불러오지 못했습니다.");
+    }
+  };
+
+  const handleEditDraft = (id) => {
+    setIsDraftModalOpen(false);
+    navigate(`/notice/edit/${id}`);
+  };
+
+  const handleDeleteDraft = async (id) => {
+    if (!window.confirm("이 임시저장 글을 영구 삭제하시겠습니까?")) return;
+    try {
+      await deleteNotice(id);
+      const data = await getDraftNotices();
+      setDraftNotices(data || []);
+      toast.success("삭제되었습니다.");
+    } catch (error) {
+      toast.error("삭제에 실패했습니다.");
     }
   };
 
@@ -258,10 +283,11 @@ export default function useNoticeLogic() {
     startDate, endDate, rangeType, searchCondition, searchKeyword, searchDept,
     setStartDate, setEndDate, setSearchCondition, setSearchKeyword, setSearchDept,
     sortBy, setSortBy, pageSize, setPageSize, currentPage,
-    isModalOpen, setIsModalOpen, modalData, modalIndex, handleModalNav, // 🚨 반환 항목 2개 추가
+    isModalOpen, setIsModalOpen, modalData, modalIndex, handleModalNav,
     filteredAndSortedNotices, currentNotices, totalPages, pageNumbers, indexOfFirstNotice,
     paginate, handleDateRange, handleDateChange, isNewPost, displayDate,
     handlePrint, handleSearch, handleTitleClick, openQuickView,
-    appliedFilters, visitedPosts 
+    appliedFilters, visitedPosts,
+    draftNotices, isDraftModalOpen, setIsDraftModalOpen, openDraftBox, handleEditDraft, handleDeleteDraft // 임시저장 관련 반환
   };
 }

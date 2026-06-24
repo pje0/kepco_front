@@ -1,8 +1,9 @@
+// src/pages/notice/NoticePage.jsx
 import React from 'react';
-import { Bell, Search, Printer, Eye, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react'; // 🚨 Edit3 추가
-import { useAuth } from '@/context/AuthContext'; // 로그인 유저 확인용
+import { Bell, Search, Printer, Eye, ChevronLeft, ChevronRight, Edit3, FolderOpen, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext'; 
 import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom'; // 🚨 추가: 페이지 이동 함수
+import { useNavigate } from 'react-router-dom'; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeLogic from './useNoticeLogic';
@@ -10,9 +11,8 @@ import './NoticePage.css';
 
 export default function NoticePage() {
   const { user } = useAuth(); 
-  // 🚨 수정: 시민(ROLE_CITIZEN)을 제외한 모든 한전 직원에게 버튼 노출
   const isEmployee = user?.role && user.role !== 'ROLE_CITIZEN';
-  const navigate = useNavigate(); // 🚨 추가: 플로팅 버튼용
+  const navigate = useNavigate(); 
   const {
     notices, isLoading,
     startDate, endDate, rangeType, searchCondition, searchKeyword, searchDept,
@@ -22,10 +22,10 @@ export default function NoticePage() {
     filteredAndSortedNotices, currentNotices, totalPages, pageNumbers, indexOfFirstNotice,
     paginate, handleDateRange, handleDateChange, isNewPost, displayDate,
     handlePrint, handleSearch, handleTitleClick, openQuickView,
-    appliedFilters, visitedPosts
+    appliedFilters, visitedPosts,
+    draftNotices, isDraftModalOpen, setIsDraftModalOpen, openDraftBox, handleEditDraft, handleDeleteDraft
   } = useNoticeLogic();
 
-  // 🚨 [신규 기능 2] 검색어 하이라이팅 함수
   const highlightText = (text, keyword) => {
     if (!keyword || !text) return text;
     const parts = text.split(new RegExp(`(${keyword})`, 'gi'));
@@ -144,7 +144,7 @@ export default function NoticePage() {
                 const deptName = notice.department || notice.author || '시스템관리팀';
                 const realIndex = filteredAndSortedNotices.length - (indexOfFirstNotice + index);
                 
-                // 🚨 String 변환으로 타입 불일치 방지 (완벽한 방문 기록 체크)
+                // 완벽한 방문 기록 체크
                 const isVisited = visitedPosts && visitedPosts.some(vId => String(vId) === String(notice.id));
                 
                 return (
@@ -157,9 +157,7 @@ export default function NoticePage() {
                         <Eye size={18} />
                       </button>
                       <span 
-                        className={`title-link transition-colors ${
-                          notice.isPinned ? 'font-bold text-black' : ''
-                        } ${isVisited ? 'text-slate-400' : 'text-slate-700'}`} 
+                        className={`title-link transition-colors ${notice.isPinned ? 'font-bold text-black' : ''} ${isVisited ? 'text-slate-400' : 'text-slate-700'}`} 
                         onClick={() => handleTitleClick(notice.id)} 
                         title="상세 페이지로 이동"
                       >
@@ -221,7 +219,6 @@ export default function NoticePage() {
             )}
           </div>
 
-          {/* 🚨 추가됨: 하단 심플 화살표 네비게이션 및 상세보기 버튼 */}
           <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 print-hide">
             <button
               onClick={() => handleModalNav(-1)}
@@ -232,11 +229,10 @@ export default function NoticePage() {
               <ChevronLeft size={36} strokeWidth={1.5} />
             </button>
 
-            {/* 🚨 [신규] 상세 페이지 이동 버튼 추가 */}
             <button
               onClick={() => {
-                setIsModalOpen(false); // 모달 닫기
-                if (modalData?.id) handleTitleClick(modalData.id); // 상세 페이지로 이동
+                setIsModalOpen(false);
+                if (modalData?.id) handleTitleClick(modalData.id);
               }}
               className="px-5 py-2 text-sm font-semibold text-white bg-[#1e3a8a] rounded hover:bg-blue-800 transition-colors"
             >
@@ -255,14 +251,56 @@ export default function NoticePage() {
         </DialogContent>
       </Dialog>
 
-      {/* 🚨 직원 전용 글쓰기 플로팅 버튼 */}
+      {/* ── 6. 임시저장 보관함 모달 ── */}
+      <Dialog open={isDraftModalOpen} onOpenChange={setIsDraftModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>임시저장 보관함</DialogTitle>
+            <DialogDescription>작성 중이던 공지사항을 이어서 작성하거나 삭제할 수 있습니다.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto mt-2 p-1">
+            {draftNotices && draftNotices.length === 0 ? (
+              <div className="text-center text-slate-500 py-8 text-sm">보관된 임시저장 글이 없습니다.</div>
+            ) : (
+              draftNotices && draftNotices.map((draft) => (
+                <div key={draft.id} className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{draft.title || '(제목 없음)'}</span>
+                    <span className="text-xs text-slate-500 mt-1">{displayDate(draft.createdAt)}</span>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0 ml-3">
+                    <button onClick={() => handleEditDraft(draft.id)} className="px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 dark:bg-slate-800 dark:border-slate-600 dark:hover:bg-slate-700">
+                      이어서 작성
+                    </button>
+                    <button onClick={() => handleDeleteDraft(draft.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-slate-800 rounded transition-colors">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── 7. 직원 전용 글쓰기 및 보관함 플로팅 버튼 ── */}
       {isEmployee && (
-        <button
-          className="notice-write-fab print-hide"
-          onClick={() => navigate('/notice/new')}
-        >
-          <Edit3 size={14} /> 새 공지사항
-        </button>
+        <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
+          <button
+            onClick={openDraftBox}
+            className="flex items-center justify-center w-10 h-10 bg-slate-600 hover:bg-slate-500 text-white rounded-full shadow-lg transition-transform hover:-translate-y-1"
+            title="임시저장 보관함"
+          >
+            <FolderOpen size={24} />
+          </button>
+          <button
+            onClick={() => navigate('/notice/new')}
+            className="flex items-center justify-center w-10 h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg transition-transform hover:-translate-y-1"
+            title="새 공지사항 작성"
+          >
+            <Edit3 size={24} />
+          </button>
+        </div>
       )}
     </div>
   );

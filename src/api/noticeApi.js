@@ -84,3 +84,8 @@ export const deleteAutoText = async (id) => {
   const response = await axiosInstance.delete(`/notices/autotexts/${id}`);
   return response.data;
 };
+
+export const getDraftNotices = async () => {
+  const response = await axiosInstance.get('/notices/drafts');
+  return response.data;
+};
