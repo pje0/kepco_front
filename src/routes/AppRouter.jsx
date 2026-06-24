@@ -20,6 +20,7 @@ import NoticeDetailPage from '@/pages/notice/NoticeDetailPage'
 import NoticeFormPage from '@/pages/notice/NoticeFormPage'
 import WorkPage from '@/pages/work/WorkPage'
 import ResourcePage from '@/pages/resource/ResourcePage'
+import UploadResourcePage from '@/pages/resource/UploadResourcePage'
 import DispatchHistory from '@/pages/dispatch/DispatchHistory'
 
 // 📁 3. 신고 처리 영역 (report)
@@ -67,9 +68,14 @@ export default function AppRouter() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/notice" element={<NoticePage />} />
+          
+        {/* 🔵 [자료실] - 시민 제외, 직원 전용 (ROLE_ADMIN 항상 통과) */}
+            <Route element={<ProtectedRoute allowedRoles={['ROLE_HR', 'ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_WORKER', 'ROLE_ADMIN']} />}>
+            <Route path="/resources" element={<ResourcePage />} />
+            <Route path="/resources/upload" element={<UploadResourcePage />} />
+            </Route>
+          
           <Route path="/notice/:id" element={<NoticeDetailPage />} />
-          {/* 💡 Sidebar.jsx의 메뉴 주소인 /resources 와 철자를 완벽하게 일치시켰습니다. */}
-          <Route path="/resources" element={<ResourcePage />} />
               
           {/* 민원 신고 접수 및 내역 확인 */}
           <Route path="/report/new" element={<ReportNewPage />} />

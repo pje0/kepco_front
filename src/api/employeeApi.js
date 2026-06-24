@@ -54,3 +54,12 @@ export async function deleteEmployee(id) {
   return axiosInstance.delete(`${API_BASE_URL}/user/${id}`)
     .then((r) => r.data)
 }
+export async function getAvailableWorkers() {
+  // axiosInstance에 의해 자동으로 http://localhost:8383/api/dispatch/available-workers 로 저격 통신됩니다.
+  return axiosInstance.get('/dispatch/available-workers')
+    .then((r) => r.data)
+    .catch((err) => {
+      console.error('가용 출동 요원 목록 조회 실패:', err);
+      return [];
+    });
+}

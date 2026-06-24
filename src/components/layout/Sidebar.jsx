@@ -26,8 +26,9 @@ const NAV_ITEMS = [
   // 공통
   { to: '/home',      label: '홈',        icon: Home,          roles: [] },
   { to: '/notice',    label: '공지사항',  icon: Bell,          roles: [] },
-  { to: '/resources', label: '자료실',    icon: FolderOpen,    roles: [] },
   { to: '/mypage',    label: '마이페이지', icon: User,          roles: [] },
+  // 시민 제외 전부(자료실)
+  { to: '/resources', label: '자료실',    icon: FolderOpen,    roles: ['ROLE_HR', 'ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_WORKER', 'ROLE_ADMIN'] },
   // 시민
   { to: '/report/new', label: '정전·고장 신고', icon: FileText,     roles: ['ROLE_CITIZEN'] },
   { to: '/report/my',  label: '내 신고 현황',   icon: ClipboardList, roles: ['ROLE_CITIZEN'] },

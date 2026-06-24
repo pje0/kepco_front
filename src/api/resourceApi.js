@@ -53,3 +53,17 @@ export async function downloadResource(id) {
     alert('다운로드에 실패했습니다. 콘솔을 확인해주세요.')
   }
 }
+
+export async function uploadResource({ title, category, description, file }) {
+  const form = new FormData()
+  form.append('title', title)
+  form.append('category', category)
+  form.append('content', description)   // 백엔드는 content로 받음
+  form.append('file', file)
+
+  return axiosInstance
+    .post('/archive', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    .then((r) => r.data)
+}
