@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart3, TrendingUp, Users, Clock, AlertTriangle, CheckCircle, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -76,20 +77,22 @@ function DonutChart({ data }) {
 }
 
 const STAT_CARDS = [
-  { key: 'totalReports',    label: '전체 신고',    icon: Activity,      theme: 'kpi-blue' },
   { key: 'pendingReports',  label: '접수 대기',    icon: AlertTriangle, theme: 'kpi-yellow' },
   { key: 'dispatchedReports', label: '출동 중',   icon: TrendingUp,    theme: 'kpi-indigo' },
-  { key: 'completedReports', label: '처리 완료',   icon: CheckCircle,   theme: 'kpi-green' },
+  { key: 'completedReports', label: '최근 7일 완료', icon: CheckCircle,   theme: 'kpi-green', link: '/dispatch/history' },
   { key: 'totalWorkers',    label: '전체 요원',    icon: Users,         theme: 'kpi-purple' },
   { key: 'activeWorkers',   label: '출동 중 요원', icon: Users,         theme: 'kpi-orange' },
-  { key: 'avgResponseMinutes', label: '평균 응답(분)', icon: Clock,      theme: 'kpi-teal' },
   { key: 'todayReports',    label: '오늘 신고',    icon: BarChart3,     theme: 'kpi-red' },
 ];
 
 export default function DashboardPage() {
   const { stats, isLoading } = useDashboardLogic();
+  const navigate = useNavigate();
 
   if (isLoading) return <LoadingSpinner className="h-64" />;
+
+  // 🚨 총괄 통계 모수 동적 재계산 (대기 + 출동 중 + 최근 7일 완료)
+  const summaryTotal = stats.pendingReports + stats.dispatchedReports + stats.completedReports;
 
   return (
     <div className="db-wrapper">
@@ -100,8 +103,12 @@ export default function DashboardPage() {
 
       {/* KPI 카드 */}
       <div className="db-kpi-grid">
-        {STAT_CARDS.map(({ key, label, icon: Icon, theme }) => (
-          <Card key={key}>
+        {STAT_CARDS.map(({ key, label, icon: Icon, theme, link }) => (
+          <Card 
+            key={key} 
+            className={`kpi-card-hover ${link ? 'cursor-pointer' : ''}`}
+            onClick={() => link && navigate(link)}
+          >
             <CardContent className="p-4">
               <div className={`kpi-card-inner ${theme}`}>
                 <div className="kpi-header">
@@ -117,19 +124,9 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* 차트 행 */}
+      {/* 차트 행 (순서 재배치) */}
       <div className="db-chart-grid">
-        {/* 월별 신고 건수 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">월별 신고 건수 (최근 6개월)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarChart data={stats.monthlyReports} valueKey="count" labelKey="month" color="#3b82f6" />
-          </CardContent>
-        </Card>
-
-        {/* 신고 유형별 */}
+        {/* 1. 신고 유형별 분포 */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">신고 유형별 분포</CardTitle>
@@ -139,7 +136,17 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* 지역별 */}
+        {/* 2. 월별 신고 건수 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">월별 신고 건수 (최근 6개월)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart data={stats.monthlyReports} valueKey="count" labelKey="month" color="#3b82f6" />
+          </CardContent>
+        </Card>
+
+        {/* 3. 지역별 신고 건수 */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">지역별 신고 건수</CardTitle>
@@ -149,16 +156,16 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* 처리 현황 요약 */}
+        {/* 4. 처리 현황 요약 */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">처리 현황 요약</CardTitle>
           </CardHeader>
           <CardContent className="summary-container">
             {[
-              { label: '처리 완료율', value: stats.totalReports > 0 ? ((stats.completedReports / stats.totalReports) * 100).toFixed(1) + '%' : '0%', color: 'bg-green' },
-              { label: '출동 중 비율', value: stats.totalReports > 0 ? ((stats.dispatchedReports / stats.totalReports) * 100).toFixed(1) + '%' : '0%', color: 'bg-blue' },
-              { label: '대기 비율', value: stats.totalReports > 0 ? ((stats.pendingReports / stats.totalReports) * 100).toFixed(1) + '%' : '0%', color: 'bg-yellow' },
+              { label: '처리 완료율', value: summaryTotal > 0 ? ((stats.completedReports / summaryTotal) * 100).toFixed(1) + '%' : '0%', color: 'bg-green' },
+              { label: '출동 중 비율', value: summaryTotal > 0 ? ((stats.dispatchedReports / summaryTotal) * 100).toFixed(1) + '%' : '0%', color: 'bg-blue' },
+              { label: '대기 비율', value: summaryTotal > 0 ? ((stats.pendingReports / summaryTotal) * 100).toFixed(1) + '%' : '0%', color: 'bg-yellow' },
             ].map(({ label, value, color }) => (
               <div key={label}>
                 <div className="prog-header">
