@@ -29,6 +29,9 @@ export default function PublicHeader() {
           <Button variant="outline" asChild>
             <Link to="/login">로그인</Link>
           </Button>
+          <Button asChild>
+            <Link to="/register">회원가입</Link>
+          </Button>
         </div>
       </div>
     </header>
