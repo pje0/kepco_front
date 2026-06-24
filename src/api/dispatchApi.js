@@ -22,12 +22,8 @@ export async function getDispatches(params = {}) {
  * 복수 파견 지시 트랜잭션 생성 (1대다 팀 빌딩 연동)
  * - ⚡ [대문자 개혁]: note 내에 패킹되는 teamRole 직급 문자열을 대문자로 박멸
  */
-export async function createDispatch(data) {
-  const payload = {
-    complaintId: Number(data.reportId),
-    workerId: Number(data.workerId),
-    workNote: data.note // DispatchPage에서 이미 '[MASTER] 지시내용' 형태로 대문자 패킹되어 유입됨
-  }
+export async function createDispatch(payload) {
+  // 인자로 들어온 payload 객체를 그대로 포스트 요청 바디에 실어 보냅니다.
   return axiosInstance.post('/api/dispatch', payload)
     .then(response => response.data)
 }

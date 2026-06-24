@@ -13,6 +13,13 @@ import { getReports } from '@/api/reportApi'
 import { getAvailableWorkers } from '@/api/employeeApi'
 import axios from 'axios'
 
+// 📋 [상태값 한글 매핑 딕셔너리 - 컴포넌트 외부 배치]
+const STATUS_TEXT_MAP = {
+  'ASSIGNED': '배정 완료',
+  'IN_PROGRESS': '처리 중',
+  'RESOLVED': '종료됨'
+};
+
 export default function DispatchPage() {
   const [dispatches, setDispatches] = useState([])
   const [pendingReports, setPendingReports] = useState([])
@@ -31,6 +38,7 @@ export default function DispatchPage() {
 
   const token = localStorage.getItem('accessToken')
 
+  
   const loadAll = async () => {
     setIsLoading(true)
     try {
@@ -158,12 +166,21 @@ export default function DispatchPage() {
     try {
       const report = pendingReports.find((r) => r.id === Number(form.reportId))
       
+      // 🚀 [디버깅 로그 추가]: 서버로 넘어가기 전의 실제 배열 데이터 상태를 확인합니다.
+      console.log("=== 🛠️ 편성된 대원 목록 원본 데이터 ===", form.selectedWorkers);
+
       const dispatchPromises = form.selectedWorkers.map(worker => {
-        return createDispatch({
+        // 전송할 객체 조립
+        const requestPayload = {
           complaintId: Number(form.reportId),
           workerId: Number(worker.id),
-          workNote: `[${worker.grade || '요원'}] ${form.note}`,
-        })
+          workNote: `[${worker.grade || '요원'}] ${form.note || ''}`, // form.note가 undefined일 때를 대비
+        };
+        
+        // 🚀 [디버깅 로그 추가]: 개별 파견 지시 데이터 구조 확인
+        console.log("🚀 백엔드 DTO로 전송 시도하는 Payload:", requestPayload);
+
+        return createDispatch(requestPayload);
       })
 
       await Promise.all(dispatchPromises)
@@ -173,7 +190,9 @@ export default function DispatchPage() {
       setForm({ reportId: '', selectedWorkers: [], note: '' })
       loadAll()
     } catch (err) {
-      setFormError(err.message)
+      // 🚀 [에러 로그 상세화]: 서버가 돌려준 세부 메시지 확인
+      console.error("서버 통신 에러 객체:", err);
+      setFormError(err.response?.data?.message || err.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -429,7 +448,7 @@ export default function DispatchPage() {
                 <TableHead>파견 시각</TableHead>
                 <TableHead>지시 사항</TableHead>
                 <TableHead>상태</TableHead>
-                <TableHead className="text-right">처리</TableHead>
+                <TableHead className="text-right">종료  시간</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -445,19 +464,12 @@ export default function DispatchPage() {
                     <TableCell className="text-sm text-muted-foreground">{d.assignedAt ? d.assignedAt.replace('T', ' ').substring(0, 16) : '-'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate" title={d.note}>{d.note || '-'}</TableCell>
                     <TableCell><StatusBadge status={d.status} /></TableCell>
-                    <TableCell className="text-right">
-                      {d.status !== 'RESOLVED' && (
-                        <select
-                          value={d.status}
-                          onChange={(e) => handleStatusChange(d.id, e.target.value)}
-                          className="text-xs h-8 rounded border border-input px-2 bg-background font-medium"
-                        >
-                          <option value="ASSIGNED">ASSIGNED (배정완료)</option>
-                          <option value="IN_PROGRESS">IN_PROGRESS (복구중)</option>
-                          <option value="RESOLVED">RESOLVED (종료)</option>
-                        </select>
-                      )}
-                    </TableCell>
+                    <TableCell className="text-right text-sm text-muted-foreground font-medium">
+                        {(d.status?.trim().toUpperCase() === 'RESOLVED' && d.completedAt) 
+                          ? d.completedAt.replace('T', ' ').substring(0, 16) 
+                          : '-'
+                        }
+                      </TableCell>
                   </TableRow>
                 ))
               )}
