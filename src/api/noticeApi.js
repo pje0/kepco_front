@@ -46,23 +46,22 @@ export async function deleteNotice(id) {
 
 export const getNoticeTemplates = async () => {
   console.log("[noticeApi] getNoticeTemplates - 템플릿 목록 요청 호출 시작");
-  const response = await axios.get('/api/notices/templates');
+  const response = await axiosInstance.get('/notices/templates');
   console.log("[noticeApi] getNoticeTemplates - 서버 응답 데이터 수신 완료:", response.data);
   return response.data;
 };
 
 export const getRecentNoticesForSelect = async () => {
   console.log("[noticeApi] getRecentNoticesForSelect - 이전 글 리스트 요청 호출 시작");
-  const response = await axios.get('/api/notices');
+  const response = await axiosInstance.get('/notices');
   console.log("[noticeApi] getRecentNoticesForSelect - 서버 응답 데이터 수신 완료:", response.data);
   
-  // 🚨 페이징 객체일 경우(content)와 일반 배열일 경우를 모두 커버하는 안전한 반환 로직
   return response.data.content || response.data.data || response.data;
 };
 
 export const createNoticeTemplate = async (payload) => {
   console.log("[noticeApi] createNoticeTemplate 호출됨 - 전달된 데이터 객체:", payload);
-  const response = await axios.post('/api/notices/templates', payload);
+  const response = await axiosInstance.post('/notices/templates', payload);
   console.log("[noticeApi] createNoticeTemplate 서버 응답 데이터 수신 완료:", response.data);
   return response.data;
 };
@@ -89,3 +88,4 @@ export const getDraftNotices = async () => {
   const response = await axiosInstance.get('/notices/drafts');
   return response.data;
 };
+
