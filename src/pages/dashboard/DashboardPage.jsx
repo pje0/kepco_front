@@ -8,25 +8,28 @@ import useDashboardLogic from './useDashboardLogic';
 import DashboardFAB from './DashboardFAB';
 import './DashboardPage.css';
 
-/** 🎯 드릴다운 클릭 이벤트를 추가한 막대 차트 */
-function BarChart({ data, valueKey, labelKey, color = '#3b82f6', onDrillDown }) {
-  if (!data || data.length === 0) return <div className="chart-empty">데이터가 없습니다.</div>;
-  const max = Math.max(...data.map((d) => d[valueKey]));
-  return (
-    <div className="bar-chart-container">
-      {data.map((item) => {
-        const height = max > 0 ? (item[valueKey] / max) * 100 : 0;
-        return (
+/** 간단한 막대 차트 (SVG 기반, 외부 라이브러리 없음) */ 
+function BarChart({ data, valueKey, labelKey, color = '#3b82f6', onDrillDown }) { 
+  if (!data || data.length === 0) return <div className="chart-empty">데이터가 없습니다.</div>; 
+  const max = Math.max(...data.map((d) => d[valueKey])); 
+  return ( 
+    <div className="bar-chart-container"> 
+      {data.map((item) => { 
+        const height = max > 0 ? (item[valueKey] / max) * 100 : 0; 
+        return ( 
           <div key={item[labelKey]} className={`bar-col ${onDrillDown ? 'cursor-pointer hover-chart' : ''}`} title="클릭하여 상세 조회"
-               onClick={() => onDrillDown && onDrillDown(labelKey, item[labelKey], item[valueKey])}>
-            <span className="bar-val">{item[valueKey]}</span>
-            <div className="bar-fill" style={{ height: `${height}%`, backgroundColor: color }} />
-            <span className="bar-label">{item[labelKey]}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
+               onClick={() => onDrillDown && onDrillDown(labelKey, item[labelKey], item[valueKey])}> 
+            <span className="bar-val">{item[valueKey]}</span> 
+            {/* 🚨 막대가 숫자를 밀어내고 뚫고 나가지 못하도록 가둬두는 트랙 추가 */}
+            <div className="bar-track">
+              <div className="bar-fill" style={{ height: `${height}%`, backgroundColor: color }} /> 
+            </div>
+            <span className="bar-label">{item[labelKey]}</span> 
+          </div> 
+        ); 
+      })} 
+    </div> 
+  ); 
 }
 
 /** 🎯 드릴다운 클릭 이벤트를 추가한 도넛 차트 */
