@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   // 인사
   { to: '/employee',  label: '인사관리',  icon: Users,         roles: ['ROLE_HR'] },
   // 파견
-  { to: '/dispatch',  label: '파견 관리', icon: Truck,         roles: ['ROLE_DISPATCHER'] },
+  { to: '/dispatch',  label: '파견 관리', icon: Truck,         roles: ['ROLE_DISPATCHER'], exact: true },
   
   // 🔐 [최종 과업: 관제 책임자 전용 동적 은닉 메뉴 등록]
   // - 컨벤션에 맞춰 '파견 관리' 바로 아래에 정교하게 배치 완료했습니다.
@@ -44,7 +44,7 @@ const NAV_ITEMS = [
     to: '/dispatch/history', 
     label: '과거 완료 이력', 
     icon: History, 
-    roles: ['ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_ADMIN'] 
+    roles: ['ROLE_DISPATCH', 'ROLE_DISPATCHER', 'ROLE_ADMIN'], 
   },
   
   // 출동요원
@@ -111,17 +111,18 @@ export default function Sidebar({ isOpen, onClose }) {
               return (
                 <li key={item.to}>
                   <NavLink
-                    to={item.to}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                          : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                      )
-                    }
-                  >
+                  to={item.to}
+                  end={item.exact}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )
+                  }
+                >
                     <Icon className="h-4 w-4 shrink-0" />
                     {item.label}
                   </NavLink>
