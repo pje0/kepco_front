@@ -14,7 +14,12 @@ import { getEmployees, createEmployee, deleteEmployee, updateEmployee } from '@/
 import { REGION_DATA } from '@/contents/regionData'
 
 // 자격증 마스터 옵션 리스트
-const CERTIFICATE_OPTIONS = ['전기기사', '전기공사기사', '전기기능장', '산업안전기사', '소방설비기사']
+const CERTIFICATE_OPTIONS = [
+  '전기기사', '전기공사기사', '전기산업기사', '전기기능사', '전기기능장',
+  '산업안전기사', '소방설비기사', 
+  '배전활선전공', '배전무정전전공', '지중배전전공',
+  '기중기운전기능사', '고소작업대운전기능사', '굴착기운전기능사'
+];
 
 export default function EmployeePage() {
   const [employees, setEmployees] = useState([])
@@ -88,7 +93,7 @@ export default function EmployeePage() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  // 🎯 [사원 이름 클릭 핸들러: 신규 등록 폼과 같은 위치에 데이터를 채워 뿅 띄움]
+  // 🎯 [사원 이름 클릭 핸들러: 신규 등록 폼과 같은 위치에 데이터를 채움]
   const handleNameClick = (emp) => {
     window.scrollTo({ top: 0, behavior: 'smooth' }) // 폼이 있는 상단으로 부드럽게 스크롤
     setFormError('')
