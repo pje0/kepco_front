@@ -1,0 +1,11 @@
+/* src/pages/dashboard/DashboardFAB.css */
+.fab-container { position: fixed; bottom: 2rem; right: 2rem; display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem; z-index: 50; }
+.fab-menu { display: flex; flex-direction: column; gap: 0.75rem; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.fab-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.fab-item { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+.fab-label { background-color: white; padding: 0.3rem 0.6rem; border-radius: 0.3rem; font-size: 0.75rem; font-weight: 600; color: #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: transform 0.2s; }
+.fab-btn { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: none; transition: transform 0.2s; cursor: pointer; }
+.fab-item:hover .fab-label, .fab-item:hover .fab-btn { transform: scale(1.05); }
+.fab-main { width: 2.5rem; height: 2.5rem; border-radius: 50%; background-color: #2563eb; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); border: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+.fab-main:hover { background-color: #1d4ed8; transform: scale(1.05); }
+.bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-green { background-color: #10b981; }

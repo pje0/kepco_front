@@ -289,3 +289,39 @@
 .dark .kpi-orange .kpi-icon-wrap { background-color: rgba(249, 115, 22, 0.2); }
 .dark .kpi-teal .kpi-icon-wrap { background-color: rgba(20, 184, 166, 0.2); }
 .dark .kpi-red .kpi-icon-wrap { background-color: rgba(239, 68, 68, 0.2); }
+
+/* ========================================================
+   🚀 4대 편의 기능 전용 CSS (툴바, 호버, PDF 인쇄 모드)
+======================================================== */
+.db-header-panel { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
+.db-controls { display: flex; gap: 0.5rem; }
+.control-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; background-color: white; color: #475569; border: 1px solid #e2e8f0; transition: all 0.2s; cursor: pointer; }
+.control-btn:hover { background-color: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+.control-btn.active { background-color: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+
+/* 차트 호버 드릴다운 액션 */
+.hover-chart { transition: transform 0.2s, filter 0.2s; }
+.hover-chart:hover .bar-fill { filter: brightness(0.85); box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.5); }
+.hover-donut { transition: stroke-width 0.2s, filter 0.2s; }
+.hover-donut:hover { stroke-width: 22; filter: brightness(1.1); }
+.hover-legend { transition: background-color 0.2s, transform 0.2s; padding: 0.2rem 0.4rem; border-radius: 0.375rem; }
+.hover-legend:hover { background-color: #f1f5f9; transform: translateX(4px); }
+
+/* 🖨️ PDF 리포트 추출 전용 미디어 쿼리 (가장 중요) */
+@media print {
+  /* 1. 사이드바, 퀵 메뉴, 제어 버튼 등 불필요한 레이아웃 화면에서 모두 숨김 */
+  body * { visibility: hidden; }
+  .no-print, nav, aside, header { display: none !important; }
+  
+  /* 2. 대시보드 메인 영역만 화면에 꽉 차게 렌더링 */
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+  
+  /* 3. 잉크 낭비 및 화면 깨짐 방지 레이아웃 강제화 */
+  body { background-color: white !important; color: black !important; }
+  .db-wrapper { padding: 0 !important; gap: 1.5rem !important; }
+  .Card { break-inside: avoid; border: 1px solid #cbd5e1 !important; box-shadow: none !important; transform: none !important; margin-bottom: 20px; }
+  
+  /* 4. 브라우저가 배경색과 차트 색상을 무시하지 않도록 강제 출력 허용 */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
