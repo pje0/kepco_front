@@ -394,7 +394,8 @@ export default function DispatchPage() {
                                 id: hasWorker.id, 
                                 name: hasWorker.name, 
                                 department: hasWorker.department || '현장복구부서', 
-                                teamRole: rec.score >= 85 ? 'MASTER' : 'JUNIOR' 
+                                // 💡 AI가 준 쓰레기 데이터(rec.grade)를 절대 믿지 말고, 프론트 원본 명부에서 찾아낸 진짜 대문자 등급(MASTER 등)을 강제 장착!
+                                grade: hasWorker.grade 
                               }
                             ]
                           }));
