@@ -48,33 +48,33 @@ export default function useDashboardLogic() {
     return () => clearInterval(timerRef.current);
   }, [isAutoRefresh, fetchStats]);
 
-  // 📊 HTML Table 기반 엑셀(.xls) 추출 (콤마 분리 오류 완벽 해결)
+  // 📊 TSV 방식 엑셀 추출 (오픈오피스/MS엑셀 칸 쪼개짐 완벽 호환)
+  // 오픈오피스 실행 시 구분 기호에 탭 추가
   const exportToExcel = () => {
     if (!stats) return;
-    const tableHtml = `
-      <html xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head><meta charset="utf-8"></head>
-        <body>
-          <table border="1">
-            <tr><th>대분류</th><th>분류 항목</th><th>발생 건수</th></tr>
-            ${stats.typeBreakdown.map(item => `<tr><td>신고 유형별</td><td>${item.type}</td><td>${item.count}</td></tr>`).join('')}
-            ${stats.monthlyReports.map(item => `<tr><td>월별 접수건수</td><td>${item.month}</td><td>${item.count}</td></tr>`).join('')}
-            ${stats.regionBreakdown.map(item => `<tr><td>지역별 접수건수</td><td>${item.region}</td><td>${item.count}</td></tr>`).join('')}
-            <tr><td colspan="3"></td></tr>
-            <tr><th colspan="3" style="text-align:left;">[처리 현황 요약]</th></tr>
-            <tr><td colspan="2">처리 완료</td><td>${stats.completedReports}</td></tr>
-            <tr><td colspan="2">출동 중</td><td>${stats.dispatchedReports}</td></tr>
-            <tr><td colspan="2">접수 대기</td><td>${stats.pendingReports}</td></tr>
-          </table>
-        </body>
-      </html>
-    `;
-    // 🚨 한글 깨짐(Mojibake) 방지를 위해 \uFEFF (BOM) 추가 및 charset 명시
-    const blob = new Blob(['\uFEFF' + tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    
+    // 1. TSV 데이터 생성 (쉼표 대신 무조건 탭(\t)으로 열을 강제 분리)
+    let tsvData = "대분류\t분류 항목\t발생 건수\n";
+    stats.typeBreakdown.forEach(item => tsvData += `신고 유형별\t${item.type}\t${item.count}\n`);
+    stats.monthlyReports.forEach(item => tsvData += `월별 접수건수\t${item.month}\t${item.count}\n`);
+    stats.regionBreakdown.forEach(item => tsvData += `지역별 접수건수\t${item.region}\t${item.count}\n`);
+    
+    tsvData += `\n[처리 현황 요약]\t\t\n`;
+    tsvData += `처리 완료\t\t${stats.completedReports}\n`;
+    tsvData += `출동 중\t\t${stats.dispatchedReports}\n`;
+    tsvData += `접수 대기\t\t${stats.pendingReports}\n`;
+
+    // 2. 한글 깨짐 방지 BOM(\uFEFF) 추가 및 엑셀 전용(.xls) MIME 타입 선언
+    const blob = new Blob(['\uFEFF' + tsvData], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `KEPCO_대시보드_통계리포트_${new Date().toISOString().slice(0,10)}.xls`;
+    
+    // 3. 다운로드 트리거 (확장자를 .xls로 지정)
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `KEPCO_대시보드_통계리포트_${new Date().toISOString().slice(0,10)}.xls`);
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return { stats, isLoading, isAutoRefresh, setIsAutoRefresh, currentTime, exportToExcel };
