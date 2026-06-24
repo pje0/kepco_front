@@ -13,7 +13,6 @@ export default function useNoticeFormLogic() {
 
   const isEditMode = !!id;
   const [isLoading, setIsLoading] = useState(isEditMode);
-  const isInitialMount = useRef(true);
 
   const [templates, setTemplates] = useState([]);
   const [recentNotices, setRecentNotices] = useState([]);
@@ -42,7 +41,6 @@ export default function useNoticeFormLogic() {
             isPinned: data.priority === 'high' || data.isPinned === true,
             content: data.content || '',
             publishAt: data.publishAt || '',
-            // 🚨 [수정] 받아올 때도 대문자로 변환 처리
             status: data.status ? data.status.toUpperCase() : 'PUBLISHED'
           });
         })
@@ -51,32 +49,12 @@ export default function useNoticeFormLogic() {
           navigate('/notice');
         })
         .finally(() => setIsLoading(false));
-    } else {
-      const savedDraft = localStorage.getItem('notice_draft_new');
-      if (savedDraft) {
-        if (window.confirm('작성 중이던 공지사항 내용이 있습니다. 이어서 작성하시겠습니까?')) {
-          setFormData(JSON.parse(savedDraft));
-          toast.success('임시 저장된 내용을 불러왔습니다.', { position: 'bottom-right' });
-        } else {
-          localStorage.removeItem('notice_draft_new');
-        }
-      }
     }
 
     getNoticeTemplates().then(data => setTemplates(data || [])).catch(console.error);
     getRecentNoticesForSelect().then(data => setRecentNotices(data || [])).catch(console.error);
     fetchAutoTexts();
   }, [id, navigate, isEditMode]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (!isEditMode && (formData.title || formData.content)) {
-      localStorage.setItem('notice_draft_new', JSON.stringify(formData));
-    }
-  }, [formData, isEditMode]);
 
   const fetchAutoTexts = async () => {
     try {
