@@ -7,13 +7,13 @@ import App from './App.jsx'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode> 공지사항 조회수 +2 방지
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
           <App />
         </AuthProvider>
       </ThemeProvider>
-    </BrowserRouter>
-  </StrictMode>,
+    </BrowserRouter>,
+  // </StrictMode>,
 )
