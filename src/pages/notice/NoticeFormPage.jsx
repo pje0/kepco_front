@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useNoticeFormLogic from './useNoticeFormLogic';
 import AutoTextModal from './components/AutoTextModal';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import './NoticeFormPage.css';
 
 const attemptAutoCorrect = (quill, range, dictRef) => {

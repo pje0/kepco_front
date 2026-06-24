@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import StatusBadge from '@/components/common/StatusBadge'
 import { getDispatches, createDispatch, updateDispatch } from '@/api/dispatchApi'
 import { getReports } from '@/api/reportApi'
-import { getEmployees } from '@/api/employeeApi'
+import { getAvailableWorkers } from '@/api/employeeApi'
 import axios from 'axios'
 
 export default function DispatchPage() {
@@ -37,12 +37,12 @@ export default function DispatchPage() {
       const [d, r, w] = await Promise.all([
         getDispatches(),
         getReports({ status: 'PENDING' }),
-        getEmployees({ role: 'WORKER' }),
+        getAvailableWorkers(),
       ])
       
       // ⚡ [근본 해결 - 런타임 크래시 박멸]: 대시보드 복합 객체 구조에서 순수 dispatches 배열 부만 정밀 선별 바인딩
-      if (d && typeof d === 'object' && d.dispatches) {
-        setDispatches(d.dispatches)
+      if (d && typeof d === 'object' && d.dispatchList) {
+        setDispatches(d.dispatchList)
       } else if (Array.isArray(d)) {
         setDispatches(d)
       } else {
@@ -59,51 +59,50 @@ export default function DispatchPage() {
   }
 
   useEffect(() => { loadAll() }, [])
+        // 📋 [출동 조 편성 핸들러]: 드롭다운 선택 시 조 편성 현황 목록에 중복 없이 추가 (기본 직급: JUNIOR)
+        const handleSelectWorker = (e) => {
+          const workerId = Number(e.target.value)
+          if (!workerId) return
 
-  // 📋 [출동 조 편성 핸들러]: 드롭다운 선택 시 조 편성 현황 목록에 중복 없이 추가 (기본 직급: JUNIOR)
-  const handleSelectWorker = (e) => {
-    const workerId = Number(e.target.value)
-    if (!workerId) return
+          const targetWorker = workers.find(w => w.id === workerId)
+          if (!targetWorker) return
 
-    const targetWorker = workers.find(w => w.id === workerId)
-    if (!targetWorker) return
+          // 🚨 [이중 안전장치]: ROLE_WORKER 권한이 없는 인사/행정 직원의 오작동 진입을 원천 차단
+          if (targetWorker.role && targetWorker.role !== 'ROLE_WORKER') {
+            setFormError('선택한 사원은 현장 복구 대원(ROLE_WORKER) 권한이 없어 출동 조 편성이 불가능합니다.')
+            e.target.value = ""
+            return
+          }
 
-    // 🚨 [이중 안전장치]: ROLE_WORKER 권한이 없는 인사/행정 직원의 오작동 진입을 원천 차단
-    if (targetWorker.role && targetWorker.role !== 'ROLE_WORKER') {
-      setFormError('선택한 사원은 현장 복구 대원(ROLE_WORKER) 권한이 없어 출동 조 편성이 불가능합니다.')
-      e.target.value = ""
-      return
-    }
+          if (form.selectedWorkers.some(w => w.id === workerId)) {
+            setFormError('이미 출동 조에 편성된 대원입니다.')
+            e.target.value = ""
+            return
+          }
 
-    if (form.selectedWorkers.some(w => w.id === workerId)) {
-      setFormError('이미 출동 조에 편성된 대원입니다.')
-      e.target.value = ""
-      return
-    }
+          setFormError('')
+          setForm(prev => ({
+            ...prev,
+            selectedWorkers: [...prev.selectedWorkers, { id: targetWorker.id, name: targetWorker.name, department: targetWorker.department, grade: targetWorker.grade }]
+          }))
+          e.target.value = "" // 셀렉트 박스 선택 상태 초기화
+        }
 
-    setFormError('')
-    setForm(prev => ({
-      ...prev,
-      selectedWorkers: [...prev.selectedWorkers, { id: targetWorker.id, name: targetWorker.name, department: targetWorker.department, teamRole: 'JUNIOR' }]
-    }))
-    e.target.value = "" // 셀렉트 박스 선택 상태 초기화
-  }
+        // 📋 [출동 조 편성 핸들러]: 작은 X 표시를 누르면 편성 현황에서 즉시 제외
+        const handleRemoveWorker = (workerId) => {
+          setForm(prev => ({
+            ...prev,
+            selectedWorkers: prev.selectedWorkers.filter(w => w.id !== workerId)
+          }))
+        }
 
-  // 📋 [출동 조 편성 핸들러]: 작은 X 표시를 누르면 편성 현황에서 즉시 제외
-  const handleRemoveWorker = (workerId) => {
-    setForm(prev => ({
-      ...prev,
-      selectedWorkers: prev.selectedWorkers.filter(w => w.id !== workerId)
-    }))
-  }
-
-  // 📋 [출동 조 편성 핸들러]: 편성 조원 내부의 직책(Role) 동적 변경 
-  const handleRoleChange = (workerId, nextRole) => {
-    setForm(prev => ({
-      ...prev,
-      selectedWorkers: prev.selectedWorkers.map(w => w.id === workerId ? { ...w, teamRole: nextRole } : w)
-    }))
-  }
+        // 📋 [출동 조 편성 핸들러]: 편성 조원 내부의 직책(Role) 동적 변경 
+        const handleRoleChange = (workerId, nextRole) => {
+          setForm(prev => ({
+            ...prev,
+            selectedWorkers: prev.selectedWorkers.map(w => w.id === workerId ? { ...w, grade: nextRole } : w)
+          }))
+        }
 
   const handleInputChange = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
   // 🧠 OpenAI 분석 정밀 매칭 피드 연동 (AI 추천 클릭 시 편성 조에 자동 배치)
@@ -140,8 +139,7 @@ export default function DispatchPage() {
       setIsAiLoading(false)
     }
   }
-
-  // ⚡ [전략 A]: 기존 스키마 변경 없이 1대다 대량 병렬 트랜잭션 출동 유도
+   // ⚡ [전략 A]: 기존 스키마 변경 없이 1대다 대량 병렬 트랜잭션 출동 유도
   const handleCreate = async (e) => {
     e.preventDefault()
     setFormError('')
@@ -150,6 +148,7 @@ export default function DispatchPage() {
       setFormError('신고 건을 선택해 주세요.')
       return
     }
+
     if (form.selectedWorkers.length === 0) {
       setFormError('출동 조 편성을 위해 최소 한 명 이상의 대원을 구성 목록에 추가해 주세요.')
       return
@@ -161,11 +160,9 @@ export default function DispatchPage() {
       
       const dispatchPromises = form.selectedWorkers.map(worker => {
         return createDispatch({
-          reportId: Number(form.reportId),
-          reportTitle: report?.title || '',
+          complaintId: Number(form.reportId),
           workerId: Number(worker.id),
-          workerName: worker.name,
-          note: `[${worker.teamRole}] ${form.note}`,
+          workNote: `[${worker.grade || '요원'}] ${form.note}`,
         })
       })
 
@@ -216,7 +213,7 @@ export default function DispatchPage() {
           { label: '대기 신고', value: pendingReports.length, color: 'text-yellow-600' },
           { label: '출동 중', value: dispatches.filter((d) => d.status === 'ASSIGNED' || d.status === 'IN_PROGRESS').length, color: 'text-blue-600' },
           { label: '당일 완료', value: getTodayResolvedCount(), color: 'text-green-600' },
-          { label: '가용 요원', value: workers.filter(w => w.role === 'ROLE_WORKER').length, color: 'text-purple-600' },
+          { label: '가용 요원', value: workers.length, color: 'text-purple-600' },
         ].map(({ label, value, color }) => (
           <Card key={label}>
             <CardContent className="pt-4 pb-4 text-center">
@@ -261,13 +258,9 @@ export default function DispatchPage() {
                       disabled={isSubmitting}
                     >
                       <option value="">-- 출동 대원 구성 목록 --</option>
-                      {/* 🚨 [1차 인라인 필터 매립]: 오염된 사원 데이터 중 ROLE_WORKER인 현장 기사만 선별 노출 */}
-                      {workers
-                        .filter((w) => w.role === 'ROLE_WORKER')
-                        .map((w) => (
-                          <option key={w.id} value={w.id}>{w.name} ({w.department || '현장복구팀'})</option>
-                        ))
-                      }
+                      {workers.map((w) => (
+                        <option key={w.id} value={w.id}>{w.name} ({w.grade || '현장요원'})</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -287,16 +280,14 @@ export default function DispatchPage() {
                           </div>
                           
                           <div className="flex items-center gap-3">
-                            <select
-                              value={worker.teamRole}
-                              onChange={(e) => handleRoleChange(worker.id, e.target.value)}
-                              className="text-xs h-7 rounded border border-input px-1.5 bg-background font-semibold text-primary"
-                            >
-                              <option value="MASTER">마스터 (팀장)</option>
-                              <option value="SENIOR">시니어 (부팀장)</option>
-                              <option value="JUNIOR">주니어 (조원)</option>
-                            </select>
-                            
+                            {/* ⚡ [기획 복구 완결]: 임의 수정을 차단하고 DB 대문자 공인 스펙 등급 명찰 전격 고정 */}
+                            <span className="text-xs font-bold px-2 py-1 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                              {worker.grade === 'MASTER' && '마스터 (팀장)'}
+                              {worker.grade === 'SENIOR' && '시니어 (부팀장)'}
+                              {worker.grade === 'JUNIOR' && '주니어 (조원)'}
+                              {!['MASTER', 'SENIOR', 'JUNIOR'].includes(worker.grade) && `일반 요원 (${worker.grade || '미지정'})`}
+                            </span>
+
                             <button
                               type="button"
                               onClick={() => handleRemoveWorker(worker.id)}
@@ -446,8 +437,8 @@ export default function DispatchPage() {
                   <TableCell colSpan={6} className="text-center text-muted-foreground py-8">파견 내역이 없습니다.</TableCell>
                 </TableRow>
               ) : (
-                dispatches.map((d) => (
-                  <TableRow key={d.id}>
+               dispatches.map((d, index) => (
+                    <TableRow key={d.dispatchId || d.id || index}>
                     <TableCell className="font-medium max-w-[200px] truncate">{d.reportTitle}</TableCell>
                     <TableCell>{d.workerName}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{d.assignedAt ? d.assignedAt.replace('T', ' ').substring(0, 16) : '-'}</TableCell>
@@ -455,13 +446,15 @@ export default function DispatchPage() {
                     <TableCell><StatusBadge status={d.status} /></TableCell>
                     <TableCell className="text-right">
                       {d.status !== 'RESOLVED' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleStatusChange(d.id, d.status === 'ASSIGNED' ? 'IN_PROGRESS' : 'RESOLVED')}
+                        <select
+                          value={d.status}
+                          onChange={(e) => handleStatusChange(d.id, e.target.value)}
+                          className="text-xs h-8 rounded border border-input px-2 bg-background font-medium"
                         >
-                          {d.status === 'ASSIGNED' ? '처리 중으로' : '완료 처리'}
-                        </Button>
+                          <option value="ASSIGNED">ASSIGNED (배정완료)</option>
+                          <option value="IN_PROGRESS">IN_PROGRESS (복구중)</option>
+                          <option value="RESOLVED">RESOLVED (종료)</option>
+                        </select>
                       )}
                     </TableCell>
                   </TableRow>
