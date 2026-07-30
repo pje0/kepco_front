@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# ⚡ 한전(KEPCO) 정전·장애 대응 MIS — Frontend
+# 한전(KEPCO) 정전·장애 대응 MIS — Frontend
 
 시민 신고 접수부터 직원용 대시보드, 자료실, 출동확인까지 제공하는 정전·장애 대응 관리 시스템
 
