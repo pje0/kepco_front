@@ -10,7 +10,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?logo=tailwindcss&logoColor=white)](.)
 [![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-black?logo=shadcnui&logoColor=white)](.)
 
-백엔드 레포 → [kepco-mis-backend](../kepco-mis-backend)
+백엔드 레포 → [kepco-back](https://github.com/pje0/kepco_back)
 
 </div>
 
