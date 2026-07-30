@@ -53,11 +53,17 @@
 ## 🛠 기술 스택
 
 **Library** · React
+
 **Build Tool** · Vite
+
 **Styling** · Tailwind CSS v4
+
 **UI Component** · shadcn/ui
+
 **인증** · JWT (Authorization 헤더)
+
 **HTTP Client** · axios
+
 **Tool** · VSCode, Git, Notion
 
 ---
