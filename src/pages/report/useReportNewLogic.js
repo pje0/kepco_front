@@ -21,6 +21,20 @@ export default function useReportNewLogic() {
   // 🚨 휠 스크롤 방지 및 줌 컨트롤을 위한 센서
   const zoomControlRef = useRef(null);
 
+  // 1. 입력 시 실시간 자동 저장
+  useEffect(() => {
+    // 최초 렌더링 시에는 저장하지 않음 (빈 데이터 덮어쓰기 방지)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    // 제목, 주소, 내용 중 하나라도 입력된 경우에만 저장
+    if (formData.title || formData.address || formData.content) {
+      localStorage.setItem(`report_draft_${user?.id || 'guest'}`, JSON.stringify(formData));
+    }
+  }, [formData, user?.id]);
+
+  // 2. 접속 시 복구 여부 확인
   // 카카오 주소 API 로드 및 임시 저장 데이터 확인
   useEffect(() => {
     const script = document.createElement('script');
@@ -30,24 +44,13 @@ export default function useReportNewLogic() {
     const savedDraft = localStorage.getItem(`report_draft_${user?.id || 'guest'}`);
     if (savedDraft) {
       if (window.confirm('작성 중이던 신고 내용이 있습니다. 이어서 작성하시겠습니까?')) {
-        setFormData(JSON.parse(savedDraft));
+        setFormData(JSON.parse(savedDraft)); // JSON 문자열을 객체로 변환하여 폼에 주입
         toast.success('임시 저장된 내용을 불러왔습니다.', { position: 'bottom-right' });
       } else {
-        localStorage.removeItem(`report_draft_${user?.id || 'guest'}`);
+        localStorage.removeItem(`report_draft_${user?.id || 'guest'}`); // 거절 시 즉시 삭제
       }
     }
   }, [user?.id]);
-
-  // 폼 데이터 변경 시 자동 임시 저장
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (formData.title || formData.address || formData.content) {
-      localStorage.setItem(`report_draft_${user?.id || 'guest'}`, JSON.stringify(formData));
-    }
-  }, [formData, user?.id]);
 
   // 🚨 순수 JS 이벤트로 강제 차단 로직 생성 (중략 없음)
   useEffect(() => {

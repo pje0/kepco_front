@@ -89,10 +89,12 @@ export default function useNoticeFormLogic() {
 
   const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
+  // 1. 템플릿 불러와서 덮어쓰기
   const handleApplyTemplate = (templateId) => {
     if (!templateId) return;
     const target = templates.find(t => String(t.id) === String(templateId));
     if (target) {
+      // 기존 데이터(prev)를 유지하되, 템플릿에 있는 제목과 내용만 덮어씌움
       setFormData(prev => ({ ...prev, title: target.title || prev.title, content: target.content || prev.content }));
       toast.success('선택하신 고정 템플릿 양식이 에디터 본문에 자동 렌더링되었습니다.');
     }
@@ -152,12 +154,14 @@ export default function useNoticeFormLogic() {
     }
   };
 
+  // 2. 현재 작성 중인 글을 템플릿으로 영구 보관
   const handleSaveAsTemplate = async () => {
     if (!formData.title.trim() || !formData.content.trim()) return toast.error('등록을 위해 빈 칸을 모두 채워주십시오.');
     setIsLoading(true);
     try {
       await createNoticeTemplate({ title: formData.title, content: formData.content, department: formData.department });
       toast.success('작성하신 서식이 새로운 고정 템플릿 데이터로 영구 보관되었습니다.');
+      // 템플릿 목록 새로고침
       const updatedTemplates = await getNoticeTemplates();
       setTemplates(updatedTemplates || []);
     } catch (error) { toast.error('템플릿 추가 중 시스템 오류가 발생했습니다.'); }

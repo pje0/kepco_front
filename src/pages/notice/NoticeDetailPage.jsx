@@ -1,25 +1,35 @@
 import React from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { FileText, Calendar, Eye, User, Printer, ListOrdered, Link as LinkIcon, Clock, ZoomIn, ZoomOut, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext'; // 🚨 관리자 권한 확인용
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { deleteNotice } from '@/api/noticeApi';
 import useNoticeDetailLogic from './useNoticeDetailLogic';
 import './NoticeDetailPage.css';
+
 export default function NoticeDetailPage() {
+  console.log("========================================");
+  console.log("🚨 [NoticeDetailPage] 1. 컴포넌트 렌더링 시작");
+  
   const { user } = useAuth();
-  // 🚨 수정: 시민(ROLE_CITIZEN)을 제외한 모든 한전 직원에게 권한 부여
   const isEmployee = user?.role && user.role !== 'ROLE_CITIZEN';
+  console.log("🚨 [NoticeDetailPage] 2. 로그인 유저 확인 완료:", user?.name, "| 직원 여부:", isEmployee);
   
   const {
     notice, noticeId, isLoading, surroundingPosts, recentPosts, originPage,
-    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate, // 🚨 hook에서 주는 것만 사용!
+    displayDate, handleDetailPrint, handleGoBack, handleCopyLink, navigate,
     zoomLevel, zoomIn, zoomOut, zoomControlRef
   } = useNoticeDetailLogic();
 
-  if (isLoading) return <LoadingSpinner className="h-64" />;
+  console.log("🚨 [NoticeDetailPage] 3. 로직 상태 수신 완료 | 로딩중(isLoading):", isLoading, "| 현재글 ID:", noticeId, "| notice 데이터 유무:", !!notice);
+
+  if (isLoading) {
+    console.log("🚨 [NoticeDetailPage] 4-A. ⏳ 로딩 상태 - 화면에 스피너를 출력합니다.");
+    return <LoadingSpinner className="h-64" />;
+  }
 
   if (!notice) {
+    console.log("🚨 [NoticeDetailPage] 4-B. ❌ 에러: 로딩이 끝났는데 notice 데이터가 없습니다! 에러 화면 출력.");
     return (
       <div className="error-container">
         <h2>존재하지 않거나 삭제된 공지사항입니다.</h2>
@@ -28,8 +38,11 @@ export default function NoticeDetailPage() {
     );
   }
 
+  console.log("🚨 [NoticeDetailPage] 4-C. ✅ 데이터 정상 수신! 본문 렌더링 시작. (제목:", notice.title, ")");
+  console.log("========================================");
+
   return (
-    <div className="nd-wrapper">
+    <div className="nd-wrapper" id="print-area">
       <div className="nd-grid-layout">
         
         {/* =========================================
@@ -59,7 +72,7 @@ export default function NoticeDetailPage() {
                     </span>
                   </div>
                   
-                  {/* 🚨 복구된 공유 및 인쇄 버튼 */}
+                  {/* 복구된 공유 및 인쇄 버튼 */}
                   <button className="nd-util-btn" onClick={handleCopyLink} title="주소 복사">
                     <LinkIcon size={14} /> 공유
                   </button>
@@ -101,7 +114,6 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 🚨 선(hr) 아래 본문에만 zoom 배율 적용 */}
-            {/* 🚨 HTML 태그를 인식하여 색상, 볼드체 등을 화면에 그대로 렌더링합니다 */}
             <div 
               className="nd-content ql-editor transition-all duration-200 transform-origin-top" 
               style={{ zoom: zoomLevel }}

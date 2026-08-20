@@ -162,3 +162,28 @@
 
 .dark .nd-back-btn { background-color: #1e293b; color: #cbd5e1; border-color: #334155; }
 .dark .nd-back-btn:hover { background-color: #334155; }
+
+/* ========================================================
+   🖨️ 공지사항 상세 페이지 인쇄(Print) 최적화
+======================================================== */
+@media print {
+  /* 1. 화면 전체 숨김 및 불필요한 사이드바/헤더/버튼 제거 */
+  body * { visibility: hidden; }
+  .print-hide, .nd-sidebar, header, nav, aside { display: none !important; }
+
+  /* 2. 본문 영역만 강제로 보이게 설정 */
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 3. 인쇄 시 여백 낭비 방지를 위해 그리드 해제 및 100% 확장 */
+  .nd-grid-layout { display: block !important; }
+  .nd-main-column { width: 100% !important; gap: 0 !important; }
+  .nd-header { padding-top: 0 !important; }
+}

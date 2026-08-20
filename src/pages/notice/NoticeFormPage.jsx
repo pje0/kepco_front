@@ -9,12 +9,15 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import './NoticeFormPage.css';
 
+//  1. 단어 치환 핵심 알고리즘
 const attemptAutoCorrect = (quill, range, dictRef) => {
   if (!quill || !range || range.length > 0) return false;
 
   const cursorIndex = range.index;
   const lengthToFetch = Math.min(cursorIndex, 30);
   const textBefore = quill.getText(cursorIndex - lengthToFetch, lengthToFetch);
+
+  // 정규식: 공백 전까지의 마지막 단어 추출
   const match = textBefore.match(/(\S+)$/);
 
   if (match) {
@@ -25,6 +28,7 @@ const attemptAutoCorrect = (quill, range, dictRef) => {
       const replacement = currentDict[typedWord];
       const startIdx = cursorIndex - typedWord.length;
 
+      // 기존 단어 삭제 후 새 단어 삽입
       quill.deleteText(startIdx, typedWord.length, 'user');
       quill.insertText(startIdx, replacement, 'user');
       quill.setSelection(startIdx + replacement.length, 0, 'user');
@@ -60,6 +64,7 @@ export default function NoticeFormPage() {
     toast.success(`자동 상용구 기능이 ${newState ? '켜졌습니다' : '꺼졌습니다'}.`, { position: 'bottom-right' });
   };
 
+  // 2. ReactQuill 키보드 이벤트 바인딩
   const modules = useMemo(() => {
     return {
       toolbar: [
@@ -72,7 +77,7 @@ export default function NoticeFormPage() {
       keyboard: {
         bindings: {
           spaceAutoCorrectCode: {
-            key: 32,
+            key: 32, // 스페이스바 감지
             handler: function(range) {
               if (!autoTextEnabledRef.current) return true;
               const replaced = attemptAutoCorrect(this.quill, range, autoTextDictRef);
